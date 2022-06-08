@@ -6,11 +6,11 @@ We're going to need to map out several possibilities for the party that we're pl
 
 Everyone loves New York (especially geospatial enthusiasts who are particularly enamored with NYC's commitment to [open data](https://data.ny.gov/)). We'll start with a published list of every park in New York City. Somewhere in these shaded shapes, we can see the faint outline of a party beginning to form:
 
---visual of parks in NYC--
+![The 2029 parks of New York City](images/nyc-parks.png)
 
 Everyone also drinks water, and fortunately for us we also have a list of the public water fountains that are located throughout the city:
 
---visual of water fountains--
+![The 3120 water fountains of New York City](images/nyc-water-fountains.png)
 
 Just like introducing two friends to each other for the first time, solving spatial problems often involves finding ways to combine the things that we care about the most, so let's see how many of these parks have water fountains:
 
@@ -21,14 +21,14 @@ use geojson::FromGeoJson;
 let parks = GeometryCollection::from_geojson_str(&parks_geojson).unwrap();
 let water_fountains = MultiPoint::from_geojson_str(&water_fountains_geojson).unwrap();
 
-let mut water_fountains_in_parks = 0;
-for water_fountain in &water_fountains {
-  if parks.contains(&water_fountain) {
-    water_fountains_in_parks += 1;
+let mut parks_with_water_fountains = vec![];
+for park in &parks {
+  if park.intersects(&water_fountains) {
+    parks_with_water_fountains.push(park);
   }
 }
 
-assert_eq!(water_fountains_in_parks, 1000);
+assert_eq!(parks_with_water_fountains.len(), 1234);
 ```
 
 In the above example, we simply counted the points within the polygon. Often you'll want to do something more complex - commonly you'll want to take some attributes from one data source and combine it with those from another data source, based on their spatial relation.
