@@ -1,8 +1,18 @@
 # Join the Party
 
-Solving spatial problems often involves combining data from multiple sources. Often we want to relate one spatial data source to another.
+Think about the people who help fill the blank spaces in your life. The shape of each relationship is usually a little different, but it's almost always possible to find some common ground. There's nothing quite as magical as watching the outline of different lives begin to overlap, and a birthday party is always a great excuse to bring people together.
 
-As a concrete, albeit simple example, let's say I have a list of all the parks in New York City, including their shapes. I also have a list of public water fountain locations across the city. Let's say I want to know how many of NYC's water fountains can be found within its parks.
+We're going to need to map out several possibilities for the party that we're planning on throwing soon.
+
+Everyone loves New York (especially geospatial enthusiasts who are particularly enamored with NYC's commitment to [open data](https://data.ny.gov/)). We'll start with a published list of every park in New York City. Somewhere in these shaded shapes, we can see the faint outline of a party beginning to form:
+
+--visual of parks in NYC--
+
+Everyone also drinks water, and fortunately for us we also have a list of the public water fountains that are located throughout the city:
+
+--visual of water fountains--
+
+Just like introducing two friends to each other for the first time, solving spatial problems often involves finding ways to combine the things that we care about the most, so let's see how many of these parks have water fountains:
 
 ```rust
 use geo::{GeometryCollection, MultiPoint};
