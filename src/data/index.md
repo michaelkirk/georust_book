@@ -1,5 +1,11 @@
 # Data Sources
 
+## Parks_Properties.csv
+
+Description: NYC Public Parks
+Download: https://nycopendata.socrata.com/api/views/enfh-gkve/rows.csv?accessType=DOWNLOAD
+From Page: https://nycopendata.socrata.com/Recreation/Parks-Properties/enfh-gkve
+
 ## DrinkingFountains_20190417.csv
 
 Description: NYC Drinking Water Fountains CSV
