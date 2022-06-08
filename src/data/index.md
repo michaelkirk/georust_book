@@ -1,7 +1,14 @@
 # Data Sources
 
-## Directory of Concessions
+## DrinkingFountains_20190417.csv
 
+Description: NYC Drinking Water Fountains CSV
+Download: https://data.cityofnewyork.us/api/views/bevm-apmm/rows.csv?accessType=DOWNLOAD
+From Page: https://data.cityofnewyork.us/Environment/NYC-Parks-Drinking-Fountains/622h-mkfu
+
+## DPR_Concessions_001.json
+
+Description: NYC Directory of Concessions
 Download: https://www.nycgovparks.org/bigapps/DPR_Concessions_001.json
 From Page: https://data.cityofnewyork.us/Housing-Development/Directory-of-Concessions/ac9y-je94
 
