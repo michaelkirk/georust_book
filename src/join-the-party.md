@@ -21,48 +21,47 @@ use geojson::FromGeoJson;
 let parks = GeometryCollection::from_geojson_str(&parks_geojson).unwrap();
 let water_fountains = MultiPoint::from_geojson_str(&water_fountains_geojson).unwrap();
 
-let mut parks_with_water_fountains = vec![];
-for park in &parks {
-  if park.intersects(&water_fountains) {
-    parks_with_water_fountains.push(park);
+let mut water_fountains_in_parks = 0;
+for water_fountain in &water_fountains {
+  if parks.contains(&water_fountain) {
+    water_fountains_in_parks += 1;
   }
 }
 
-assert_eq!(parks_with_water_fountains.len(), 1234);
+assert_eq!(water_fountains_in_parks, 1000);
 ```
 
-In the above example, we simply counted the points within the polygon. Often you'll want to do something more complex - commonly you'll want to take some attributes from one data source and combine it with those from another data source, based on their spatial relation.
+In the above example, we simple filtered out the parks that didn't have a water fountain. Often you'll want to do something more complex - commonly you'll want to take some attributes from one data source and combine it with those from another data source, based on their spatial relation. We'll work on that next.
 
-As a further example, let's say I want to prepare an interactive web map showing a pin where each water fountain is. When a user clicks on the pin they should see some details about the water fountain, including it's latitude/longitude and the _name_ of the park that it is inside of, if any.
-
-To be a little more specific, imagine something like these two data sources:
-
-**Water Fountains**
-
-| water fountain location |
-|-------------------------|
-| `POINT(1.0 2.0)`        |
-| `POINT(2.0 3.0)`        |
-| `POINT(4.0 4.0)`        |
-| `POINT(9.0 9.0)`        |
+As an example, we have these two data sources:
 
 **Parks**
 
-| park shape                       | park name     |
-|----------------------------------|---------------|
-| `MULTIPOLYGON((1.0 2.0,...)...)` | Joe's Park    |
-| `MULTIPOLYGON((3.0 4.0,...)...)` | Memorial Park |
+| park geometry                    | park name         |
+|----------------------------------|-------------------|
+| `MULTIPOLYGON((1.0 2.0,...)...)` | Prospect Park     |
+| `MULTIPOLYGON((3.0 4.0,...)...)` | Gantra Plaza      |
+| `MULTIPOLYGON((3.0 4.0,...)...)` | Forte Greene Park |
+| ...                              | ...               |
 
-Ultimately, we want to combine these two data sources in order to create something like:
+**Boroughs**
 
-| water fountain location | park name            |
-|-------------------------|----------------------|
-| `POINT(1.0 2.0)`        | Joe's Park           |
-| `POINT(2.0 3.0)`        | Joe's Park           |
-| `POINT(4.0 4.0)`        | Memorial Park        |
-| `POINT(4.0 4.0)`        | <blank>              |
+| borough shape           | borough name |
+|-------------------------|--------------|
+| `MULTIPOLYGON(1.0 2.0)` | Brooklyn     |
+| `MULTIPOLYGON(2.0 3.0)` | Queens       |
+| ...                     | ...          |
 
-If you've worked with SQL before, you're probably thinking this looks an awful lot like a [JOIN clause](https://en.wikipedia.org/wiki/Join_(SQL)). And you'll no doubt be delighted to know that this operation is referred to as a *spatial* join. If you've never worked with SQL before, I'm sure you'll be delighted to know that it doesn't really matter what it's called and that the SQL users probably weren't really all that excited about the preceding revelation anyway.
+Ultimately, we want to produce a list of candidate party locations, like this:
+
+| park name         | borough name |
+|-------------------|--------------|
+| Prospect Park     | Brooklyn     |
+| Gantra Plaza      | Queens       |
+| Forte Greene Park | Brooklyn     |
+| ...               | ...          |
+
+See how it combines a bit of data from each source? If you've worked with SQL before, you're probably thinking this looks an awful lot like a [JOIN clause](https://en.wikipedia.org/wiki/Join_(SQL)). And you'll no doubt be delighted to know that this operation is referred to as a *spatial* join. If you've never worked with SQL before, I'm sure you'll be delighted to know that it doesn't really matter what it's called and that the SQL users probably weren't really all that excited about the preceding revelation anyway.
 
 Here's what that'd look like:
 ```rust

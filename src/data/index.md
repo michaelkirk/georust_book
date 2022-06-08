@@ -12,11 +12,26 @@ Description: NYC Drinking Water Fountains CSV
 Download: https://data.cityofnewyork.us/api/views/bevm-apmm/rows.csv?accessType=DOWNLOAD
 From Page: https://data.cityofnewyork.us/Environment/NYC-Parks-Drinking-Fountains/622h-mkfu
 
+## NYC-Parks-Drinking-Fountains.geojson
+
+Description: NYC Drinking Water Fountains
+From Page: https://data.cityofnewyork.us/Environment/NYC-Parks-Drinking-Fountains/622h-mkfu
+
+## Borough Boundaries.geojson 
+
+From Page: https://data.cityofnewyork.us/City-Government/Borough-Boundaries/tqmj-j8zm
+
 ## DPR_Concessions_001.json
 
 Description: NYC Directory of Concessions
 Download: https://www.nycgovparks.org/bigapps/DPR_Concessions_001.json
 From Page: https://data.cityofnewyork.us/Housing-Development/Directory-of-Concessions/ac9y-je94
+
+## DPR_Concessions_001.geojson
+
+Transformed  DPR_Concessions_001.json into a GeoJSON FeatureCollection via:
+
+    cat DPR_Concessions_001.json| jq '{type: "FeatureCollection", features: [.[]|{type: "Feature", geometry: {type: "Point", coordinates: [.locations[]|.[]|.lng,.lat|tonumber]}, properties: . }]}' > DPR_Concessions_001.geojson
 
 ### Data Dictionary
 
