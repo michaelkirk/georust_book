@@ -33,80 +33,78 @@ assert_eq!(water_fountains_in_parks, 1000);
 
 In the above example, we simple filtered out the parks that didn't have a water fountain. Often you'll want to do something more complex - commonly you'll want to take some attributes from one data source and combine it with those from another data source, based on their spatial relation. We'll work on that next.
 
-As an example, we have these two data sources:
+We have these two data sources:
 
-**Parks**
+**List of Parks**
 
-| park geometry                    | park name         |
-|----------------------------------|-------------------|
-| `MULTIPOLYGON((1.0 2.0,...)...)` | Prospect Park     |
-| `MULTIPOLYGON((3.0 4.0,...)...)` | Gantra Plaza      |
-| `MULTIPOLYGON((3.0 4.0,...)...)` | Forte Greene Park |
-| ...                              | ...               |
+| park name         | park shape                       |
+|-------------------|---------------------------------|
+| Prospect Park     | `MULTIPOLYGON((1.0 2.0,...)...)` |
+| Gantra Plaza      | `MULTIPOLYGON((3.0 4.0,...)...)` |
+| Forte Greene Park | `MULTIPOLYGON((3.0 4.0,...)...)` |
+| ...               | ...                              |
 
-**Boroughs**
+**The Five Boroughs and Their Shape**
 
-| borough shape           | borough name |
-|-------------------------|--------------|
-| `MULTIPOLYGON(1.0 2.0)` | Brooklyn     |
-| `MULTIPOLYGON(2.0 3.0)` | Queens       |
-| ...                     | ...          |
+| borough name | borough shape                    |
+|--------------|----------------------------------|
+| Brooklyn     | `MULTIPOLYGON((1.0 2.0,...)...)` |
+| Queens       | `MULTIPOLYGON(((1.0 2.0))...)`   |
+| ...          | ...                              |
 
-Ultimately, we want to produce a list of candidate party locations, like this:
+Ultimately, we want to produce a list of options for party locations, like this:
 
-| park name         | borough name |
-|-------------------|--------------|
-| Prospect Park     | Brooklyn     |
-| Gantra Plaza      | Queens       |
-| Forte Greene Park | Brooklyn     |
-| ...               | ...          |
+ - Option 1: Prospect Park in Brooklyn
+ - Option 2: Gantry Plaza in Queens
+ - Option 3: Forte Green Park in Brooklyn
 
-See how it combines a bit of data from each source? If you've worked with SQL before, you're probably thinking this looks an awful lot like a [JOIN clause](https://en.wikipedia.org/wiki/Join_(SQL)). And you'll no doubt be delighted to know that this operation is referred to as a *spatial* join. If you've never worked with SQL before, I'm sure you'll be delighted to know that it doesn't really matter what it's called and that the SQL users probably weren't really all that excited about the preceding revelation anyway.
+Note how each of the options combines the park name from the first data source with the borough from the second data source that contains it.
 
-Here's what that'd look like:
+If you've worked with SQL before, you might be thinking that this sounds a bit like a [JOIN clause](https://en.wikipedia.org/wiki/Join_(SQL)). And you'll no doubt be delighted to know that this kind operation is referred to as a *spatial join*. If you've never worked with SQL before, don't worry, you have an even bigger reason to be delighted.
+
+
 ```rust
 use geo::types::{MultiPolygon, Point};
 use geo::algorithms::{Contains};
 use geojson::FromGeoJson;
 
+// First Input
 struct Park {
   geometry: MultiPolygon<f64>,
   name: String
 }
+let parks: Vec<Park> = Park::from_geojson("parks.geojson");
 
-// let parks = GeometryCollection::from_geojson_str(&parks_geojson).unwrap();
-let parks: Vec<Park> = todo!("parse geojson into Park struct, maybe using the FromGeoJson trait");
+// Second Input
+struct Borough {
+  geometry: MultiPolygon<f64>,
+  name: String
+}
+let boroughs: Vec<Borough> = Park::from_geojson("borough.geojson");
 
-struct WaterFountain {
-  location: Point<f64>,
-  park_name: Option<String>,
+// Output
+struct PartyVenue {
+  park_geometry: MultiPolygon<f64>,
+  park_name: String,
+  borough_name: String,
 }
 
-let water_fountain_locations = MultiPoint::from_geojson_str(&water_fountains_geojson).unwrap();
+let mut party_venues: Vec<PartyVenue> = Vec::new();
 
-let mut water_fountains_in_parks = 0;
-let water_fountains = water_fountain_locations.iter().map(|water_fountain_location| {
-  for park in parks {
-    if park.geometry.contains(&water_fountain_location) {
-      return WaterFountain {
-        location: water_fountain_location,
-        park_name: Some(park.name.clone())
+for park in parks {
+  for borough in boroughs {
+    if borough.geometry.contains(&park.geometry) {
+      let venue = PartyVenue {
+        park_name: park.name.clone(),
+        park_geometry: park.geometry.clone(),
+        borough_name: borough.name.clone(),
       }
+      party_venues.push(venue);
     }
   }
-  // None of the parks contained this water fountain
-  return WaterFountain { location: water_fountain_location, park_name: None }
-}).collect();
-
-let output = water_fountains.to_geojson_str();
-assert_eq!(output[0..50], r#"{"type": "FeatureCollection", "features":""#);
+  todo!("This park wasn't contained in a single borough")
+}
 ```
-<i>
-draft note 1: I'm not sure if this example is worthwhile - it's somewhat redundant with the forthcoming party example. There's nothing fundamentally new about the party example which will follow - it'll just be a more complicated (convoluted?) example. But maybe that is a good way to reinforce after the relatively "nice and neat" example here.
-</i>
-<i>
-draft note 2: it's kind of a lot of code. We might want to break it up better like we did with the previous walk through.
-</i>
 
 ## My problem
 
