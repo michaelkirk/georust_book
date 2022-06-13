@@ -1,18 +1,18 @@
 # Join the Party
 
-Think about the people who help fill the blank spaces in your life. The shape of each relationship is usually a little different, but it's almost always possible to find some common ground. There's nothing quite as magical as watching the outline of different lives begin to overlap, and a birthday party is always a great excuse to bring people together.
+Think about the people who help fill the blank spaces in your life. The shape of each relationship is usually a little different, but it's almost always possible to find some common ground. For example, even if your friends (incorrectly) think that ["the dress"](https://en.wikipedia.org/wiki/The_dress) is white and gold, they still (correctly) don't like feeling thirsty.
 
-We're going to need to map out several possibilities for the party that we're planning on throwing soon.
+## Drink from the Firehose
 
-Everyone loves New York (especially geospatial enthusiasts who are particularly enamored with NYC's commitment to [open data](https://data.ny.gov/)). We'll start with a published list of every park in New York City. Somewhere in these shaded shapes, we can see the faint outline of a party beginning to form:
+Imagine living in New York City. Good pizza, Broadway, and one of the country's best collections of [open data](https://data.ny.gov/) have never felt closer to home. We're looking for a spot to meet up with some friends. Let's start with a published list of every park in the city. Somewhere in these shaded shapes, we can see the faint outline of a future party beginning to form:
 
 ![The 2029 parks of New York City](images/nyc-parks.png)
 
-Everyone also drinks water, and fortunately for us we also have a list of the public water fountains that are located throughout the city:
+Fortunately for us, we also have a list of every public water fountain that will let us sip some of NYC's ["world-renowned"](https://www1.nyc.gov/site/greenyc/take-action/drink-tap-water.page) tap water whenever the conversation starts to feel a little dry:
 
 ![The 3120 water fountains of New York City](images/nyc-water-fountains.png)
 
-Just like introducing two friends to each other for the first time, solving spatial problems often involves finding ways to combine the things that we care about the most, so let's see how many of these parks have water fountains:
+Right now we're dealing with two different data sources. Solving spatial problems often involves finding ways to combine the things that we care about the most. Let's see how many of these parks have water fountains:
 
 ```rust
 use geo::{GeometryCollection, MultiPoint};
@@ -28,8 +28,11 @@ for water_fountain in &water_fountains {
   }
 }
 
+todo!("There are probably more than 1000 parks with water fountains.")
 assert_eq!(water_fountains_in_parks, 1000);
 ```
+
+## Thirst for Knowledge
 
 In the above example, we simple filtered out the parks that didn't have a water fountain. Often you'll want to do something more complex - commonly you'll want to take some attributes from one data source and combine it with those from another data source, based on their spatial relation. We'll work on that next.
 
