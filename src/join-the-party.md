@@ -110,9 +110,9 @@ for park in parks {
 }
 ```
 
-## Water ~~Conservation~~ Conversation
+## Water Cooler
 
-We can build upon our new list a bit further by looking for small parks in each borough that are less likely to be crowded. If Central Park is Top 40, which parks are more like the indie music you and your hipster friends just can't get enough of these days? One theory is that busy parks would need to have more drinking fountains, so let's bring water back into the mix and try to build something that looks like this:
+We can build upon our new list a bit further by looking for small parks in each borough that are less likely to be crowded. If Central Park is as mainstream as it gets, which open spaces are more like the avant-garde Jazz that your hipster friends just can't get enough of these days? One theory is that busy parks would need to have more drinking fountains, so let's bring them back into the mix and find a place where it's possible to keep our heads above water in an ocean of people:
 
 **Parks Sorted by Fewest Drinking Fountains**
 
@@ -120,8 +120,14 @@ We can build upon our new list a bit further by looking for small parks in each 
 |--------------------------|-----------|-----------|
 | Unpopular Park           | Queens    | 1         |
 | Dry Zone Memorial Grove  | Brooklyn  | 3         |
-| Please Laugh, Michael    | Bronx     | 2         |
+| Will you laugh again?    | Bronx     | 1         |
 | ...                      | ...       |           |
+
+## Drowning in Data
+
+So far we've been analyzing these data sets without any consideration for speed. We can sort of justify our laissez-faire approach to CPU usage for one-off calculations that won't take too much time to run either way, but optimization become increasingly important as we begin to work with larger amounts of data.
+
+In the next section we'll explore some common techniques to enhance the performance of geospatial operations. Quickly moving through the real world may require a jet engine, but that doesn't mean that your laptop needs to sound like one.
 
 ---
 
