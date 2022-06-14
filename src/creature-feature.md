@@ -1,8 +1,8 @@
 # Attribute Data
 
-In the [previous example](./youre-projecting.html) we worked with geometries using the Well Known Text (WKT) format. It should come as no surprise that solving geospatial problems fundamentally involves geometry, but it's rarely about *exclusively* geometry. Usually there is some other attribute data associated with that geometry that we want want to explore.
+In the [previous example](./youre-projecting.html) we worked with geometries using the Well Known Text (WKT) format. It should come as no surprise that solving geospatial problems fundamentally involves geometry, but it's rarely about *exclusively* geometry. Usually there is some other attribute data associated with that geometry that we want want to explore. This combination of a geometry with its associated attribute data is often referred to as a _feature_, and a group of features is called a _feature collection_.
 
-(TODO: picture of waterways)
+![Many spidering waterways consolidating into a major river](images/philly-waterways.png)
 
 Philadelphia has a lot of water. The Delaware River defining it's eastern boundary, the Schuylkill River running through the city from the North West. The Wissahickon is a local favorite spot for a natural reprieve. Other water ways, like [Mill Creek] have been paved over, only making themselves known through the occasional appearance of gaping sink holes.
 
@@ -13,6 +13,8 @@ How do we cross all this water? It'd be helpful to know which segments of the wa
 Because WKT can only represent geometry, and has no way to represent attribute data, like whether or not that geometry has a bridge, a common approach is to create a CSV (comma separated value) file where one column contains the WKT geometry, and the other columns contain the attribute data - i.e. whether or not it's bridged.
 
 This [CSV of Philadelphia's water ways](TODO.csv) does just that. Here's an excerpt:
+
+![Zoomed in segment of a bending waterway, with one narrow segment highlighted](images/philly-bridge-segment.png)
 
 | creek_name        | watershed         | inf1    | geometry           |
 |-------------------|-------------------|---------|--------------------|
