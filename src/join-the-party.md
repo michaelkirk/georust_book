@@ -125,7 +125,7 @@ We can build upon our new list a bit further by looking for small parks in each 
 
 ## Drowning in Data
 
-So far we've been analyzing these data sets without any consideration for speed. We can sort of justify our laissez-faire approach to CPU usage for one-off calculations that won't take too much time to run either way, but optimization become increasingly important as we begin to work with larger amounts of data.
+So far we've been analyzing these data sets without any consideration for speed. We can sort of justify our laissez-faire approach to CPU usage for one-off calculations that won't take too much time to run either way, but optimization will become increasingly important as we begin to work with larger amounts of data.
 
 In the next section we'll explore some common techniques to enhance the performance of geospatial operations. Quickly moving through the real world may require a jet engine, but that doesn't mean that your laptop needs to sound like one.
 
@@ -133,41 +133,9 @@ In the next section we'll explore some common techniques to enhance the performa
 
 ## Draft Notes
 
-- Lots of space.
-- City that never sleeps; party never ends.
-- Friends with different interests.
-- Dunk vs. dry (drinking fountains)
-- Real horses vs. fake horses.
 - Space jam. Jam/jelly (Michael is sure there's a joke here)
-- Concessions
-- Thirst trap
-- NYC public data publishing practices. Possibly the best in the country.
-- Dunk on friends (make them take the L train before taking the L)
-- Sequence: Basketball (hot), pool (cool), snacks, drinks
-- What's within your heart? Different social circles, overlapping?
-- Broadway shows.
-- Get away from Times Square.
-- Can't show off your drip in a place without water.
 
 Point in a polygon (point is contained).
 Polygon within polygon, versus polygon that touches the side of another.
 "If a property line crosses counties, should it be counted in both (or neither)."
 Contains, intersects, "is within"
-
-Data sets:
-- Parks
-- Basketball
-- Concessions
-- Drinking fountains
-
-Frank summary of what we're going to talk about (e.g. this is what a spatial join *is*).
-
-Borough column in the Parks dataset is a spatial join, already in the data set. How would we get that if it wasn't already there?
-
-This article introduces at least three new concepts:
-1. geojson as a format
-2. **attribute** data (the previous example uses *only* geometry, not attributes like "name" or "borough"
-3. parsing into structs
-4. spatial joining
-
-Arguably the first three concepts might benefit from being separated into a preceding chapter. It should be probably be called https://en.wikipedia.org/wiki/Creature_Features or maybe something like "OMG GEOJSON"
