@@ -1,6 +1,6 @@
 # Join the Party
 
-Think about the people who help fill the blank spaces in your life. The shape of each relationship is usually a little different, but it's almost always possible to find some common ground. For example, even if your friends (incorrectly) think that ["the dress"](https://en.wikipedia.org/wiki/The_dress) is white and gold, they still (correctly) don't like feeling thirsty.
+Think about the people who help fill the blank spaces in your life. The shape of each relationship is usually a little different, but it's almost always possible to find some common ground. Even if your friends (incorrectly) think that ["the dress"](https://en.wikipedia.org/wiki/The_dress) is white and gold, they still (correctly) don't like feeling thirsty.
 
 ## Drink from the Firehose
 
@@ -12,7 +12,9 @@ Fortunately for us, we also have a list of every public water fountain that will
 
 ![The 3120 water fountains of New York City](images/nyc-water-fountains.png)
 
-Right now we're dealing with two different data sources. Solving spatial problems often involves finding ways to combine the things that we care about the most. Let's see how many of these parks have water fountains:
+## Filtered Water
+
+Right now we're dealing with two different data sources. Solving spatial problems often involves finding ways to stir things up. Let's see how many of these parks have water fountains:
 
 ```rust
 use geo::{GeometryCollection, MultiPoint};
@@ -34,9 +36,17 @@ assert_eq!(water_fountains_in_parks, 1000);
 
 ## Thirst for Knowledge
 
-In the above example, we simple filtered out the parks that didn't have a water fountain. Often you'll want to do something more complex - commonly you'll want to take some attributes from one data source and combine it with those from another data source, based on their spatial relation. We'll work on that next.
+We simply skipped any parks that don't have drinking fountains in the example above, but oftentimes we will need to do something more complex like taking some attributes from one data source and combining those attributes with another data source based on their spatial relationship.
 
-We have these two data sources:
+Let's look at some selected data from two data sources:
+
+**The Five Boroughs**
+
+| borough name | borough shape                    |
+|--------------|----------------------------------|
+| Brooklyn     | `MULTIPOLYGON((1.0 2.0,...)...)` |
+| Queens       | `MULTIPOLYGON(((1.0 2.0))...)`   |
+| ...          | ...                              |
 
 **List of Parks**
 
@@ -47,24 +57,15 @@ We have these two data sources:
 | Forte Greene Park | `MULTIPOLYGON((3.0 4.0,...)...)` |
 | ...               | ...                              |
 
-**The Five Boroughs and Their Shape**
-
-| borough name | borough shape                    |
-|--------------|----------------------------------|
-| Brooklyn     | `MULTIPOLYGON((1.0 2.0,...)...)` |
-| Queens       | `MULTIPOLYGON(((1.0 2.0))...)`   |
-| ...          | ...                              |
-
-Ultimately, we want to produce a list of options for party locations, like this:
+Notice how the borough and park data sources include detailed shape information. The smaller shapes of each *park* can be positioned within the larger shapes that comprise each *borough*. Because our friends live in different areas, a list like this could really help us narrow down where we want to get together:
 
  - Option 1: Prospect Park in Brooklyn
  - Option 2: Gantry Plaza in Queens
  - Option 3: Forte Green Park in Brooklyn
 
-Note how each of the options combines the park name from the first data source with the borough from the second data source that contains it.
+In order to generate this list, we need to combine the park name from the first data source with the borough from the second data source that contains it.
 
-If you've worked with SQL before, you might be thinking that this sounds a bit like a [JOIN clause](https://en.wikipedia.org/wiki/Join_(SQL)). And you'll no doubt be delighted to know that this kind operation is referred to as a *spatial join*. If you've never worked with SQL before, don't worry, you have an even bigger reason to be delighted.
-
+If you've worked with SQL before, you might be thinking that this sounds a bit like a [JOIN clause](https://en.wikipedia.org/wiki/Join_(SQL)), and you'll no doubt be delighted to know that this kind of operation is indeed referred to as a *spatial join*. If you've never worked with SQL before, don't worry, you have an even bigger reason to be delighted.
 
 ```rust
 use geo::types::{MultiPolygon, Point};
@@ -109,13 +110,18 @@ for park in parks {
 }
 ```
 
-## My problem
+## Water ~~Conservation~~ Conversation
 
-Ok, enough with the motivating context, and onto the problem at hand. I need your help. I'm visiting New York for a little bit, and I'm trying to throw a party for my friends here. I'm going to invite 3 friends (it's a small party), but each friend has their own favorite activity. Bobi likes basketball, Horia likes horses, while Sam prefers swimming. My own favorite past time is geo spatial analysis, so I'm set, but my friends could use a little help.
+We can build upon our new list a bit further by looking for small parks in each borough that are less likely to be crowded. If Central Park is Top 40, which parks are more like the indie music you and your hipster friends just can't get enough of these days? One theory is that busy parks would need to have more drinking fountains, so let's bring water back into the mix and try to build something that looks like this:
 
-New York City has a lot of parks. They all have different amenities. Could one of them satisfy these diverse needs? The city has published some data on which ameneties are available where, but it's not organized in such a way that lets you answer this kind of question directly.
+**Parks Sorted by Fewest Drinking Fountains**
 
-Luckily, the tools we need to piece together the perfect party are at hand.
+| park name                | borough   | fountains |
+|--------------------------|-----------|-----------|
+| Unpopular Park           | Queens    | 1         |
+| Dry Zone Memorial Grove  | Brooklyn  | 3         |
+| Please Laugh, Michael    | Bronx     | 2         |
+| ...                      | ...       |           |
 
 ---
 
