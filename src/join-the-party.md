@@ -42,7 +42,7 @@ Let's look at some selected data from two data sources:
 
 **The Five Boroughs**
 
-| borough name | borough shape                    |
+| borough_name | borough_shape                    |
 |--------------|----------------------------------|
 | Brooklyn     | `MULTIPOLYGON((1.0 2.0,...)...)` |
 | Queens       | `MULTIPOLYGON(((1.0 2.0))...)`   |
@@ -50,7 +50,7 @@ Let's look at some selected data from two data sources:
 
 **List of Parks**
 
-| park name         | park shape                       |
+| park_name         | park_shape                       |
 |-------------------|---------------------------------|
 | Prospect Park     | `MULTIPOLYGON((1.0 2.0,...)...)` |
 | Gantra Plaza      | `MULTIPOLYGON((3.0 4.0,...)...)` |
@@ -63,7 +63,7 @@ Notice how the borough and park data sources include detailed shape information.
  - Option 2: Gantry Plaza in Queens
  - Option 3: Forte Green Park in Brooklyn
 
-In order to generate this list, we need to combine the park name from the first data source with the borough from the second data source that contains it.
+In order to produce a list like this, we need to combine the park name from the first data source with the borough that contains it from the second data source.
 
 If you've worked with SQL before, you might be thinking that this sounds a bit like a [JOIN clause](https://en.wikipedia.org/wiki/Join_(SQL)), and you'll no doubt be delighted to know that this kind of operation is indeed referred to as a *spatial join*. If you've never worked with SQL before, don't worry, you have an even bigger reason to be delighted.
 
@@ -106,28 +106,104 @@ for park in parks {
       party_venues.push(venue);
     }
   }
-  todo!("This park wasn't contained in a single borough")
+  todo!("This park wasn't contained within a single borough")
 }
+
+let first_venue = party_venues[0];
+assert_eq!(first_venue.park_name, todo!());
+assert_eq!(first_venue.borough_name, todo!());
 ```
 
-## Water Cooler
+## Water, Cooler
 
-We can build upon our new list a bit further by looking for small parks in each borough that are less likely to be crowded. If Central Park is as mainstream as it gets, which open spaces are more like the avant-garde Jazz that your hipster friends just can't get enough of these days? One theory is that busy parks would need to have more drinking fountains, so let's bring them back into the mix and find a place where it's possible to keep our heads above water in an ocean of people:
+If Central Park is as mainstream as it gets, which open spaces are more like the avant-garde Vapor Wave Jazz that your hipster friends just can't get enough of these days? Let's augment our earlier code to filter out the mainstream (largest) parks, while still ensuring we'd be able to get a drink of New York's finest (water).
 
-**Parks Sorted by Fewest Drinking Fountains**
+**Parks, with at least one water fountain, sorted by smallest area**
 
-| park name                | borough   | fountains |
-|--------------------------|-----------|-----------|
-| Unpopular Park           | Queens    | 1         |
-| Dry Zone Memorial Grove  | Brooklyn  | 3         |
-| Will you laugh again?    | Bronx     | 1         |
-| ...                      | ...       |           |
+| park_name                    | borough   | fountains | area     |
+|------------------------------|-----------|-----------|----------|
+| Tiny Town                    | Queens    | 2         | 100      |
+| Polly Pocket Park            | Brooklyn  | 3         | 200      |
+| Honey I Shrunk the Esplanade | Bronx     | 1         | 300      |
+| ...                          | ...       | ...       | ...      |
+
+```rust
+use geo::types::{MultiPolygon, Point};
+use geo::algorithms::{Contains};
+use geojson::FromGeoJson;
+
+// First Input
+struct Park {
+  geometry: MultiPolygon<f64>,
+  name: String
+}
+let parks: Vec<Park> = Park::from_geojson("parks.geojson");
+
+// Second Input
+struct Borough {
+  geometry: MultiPolygon<f64>,
+  name: String
+}
+let boroughs: Vec<Borough> = Park::from_geojson("borough.geojson");
+
+// Output
+struct PartyVenue {
+  park_geometry: MultiPolygon<f64>,
+  park_name: String,
+  borough_name: String,
+  water_fountain_count: usize,
+  area: f64,
+}
+
+let mut party_venues: Vec<PartyVenue> = Vec::new();
+
+for park in parks {
+  for borough in boroughs {
+    if borough.geometry.contains(&park.geometry) {
+      let venue = PartyVenue {
+        park_name: park.name.clone(),
+        park_geometry: park.geometry.clone(),
+        borough_name: borough.name.clone(),
+        area: park.geometry.unsigned_area(),
+      }
+      party_venues.push(venue);
+    }
+  }
+  todo!("This park wasn't contained within a single borough")
+}
+
+for water_fountain in &water_fountains {
+  for party_venue in &mut party_venues {
+    if party_venue.geometry.contains(&water_fountain.geometry) {
+      party_venue.water_fountain_count += 1;
+      break;
+    }
+  }
+}
+
+party_venues = party_venues.iter().filter(|venue| venue.water_fountain_count > 0).collect();
+
+party_venues.sort_in_place(|venue_1, venue_2| venue_1.area.compare(venue_2.area));
+
+let tiniest_venue = party_venues[0];
+assert_eq!(tiniest_venue.park_name, todo!());
+assert_eq!(tiniest_venue.borough_name, todo!());
+assert_eq!(tiniest_venue.water_fountain_count, todo!());
+assert_eq!(tiniest_venue.area, todo!());
+
+
+let largest_venue = party_venues[-1];
+assert_eq!(largest_venue.park_name, todo!());
+assert_eq!(largest_venue.borough_name, todo!());
+assert_eq!(largest_venue.water_fountain_count, todo!());
+assert_eq!(largest_venue.area, todo!());
+```
 
 ## Drowning in Data
 
-So far we've been analyzing these data sets without any consideration for speed. We can sort of justify our laissez-faire approach to CPU usage for one-off calculations that won't take too much time to run either way, but optimization will become increasingly important as we begin to work with larger amounts of data.
+I don't know if you actually tried to run the code above. It works, but it's slower than necessary. So far we've been analyzing these data sets without any consideration for speed. We can sort of justify our laissez-faire approach to CPU usage for one-off calculations that won't take too much time to run either way, but optimization will become increasingly important as we begin to work with larger amounts of data. In particular, we're being very naive about checking if each water fountain is in each park.
 
-In the next section we'll explore some common techniques to enhance the performance of geospatial operations. Quickly moving through the real world may require a jet engine, but that doesn't mean that your laptop needs to sound like one.
+In the next section we'll explore some common techniques to enhance the performance of some common geospatial operations. Quickly moving through the real world may require a jet engine, but that doesn't mean that your laptop needs to sound like one.
 
 ---
 
