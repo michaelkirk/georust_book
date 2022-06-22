@@ -4,7 +4,7 @@ Just like any good argument, the best way to start spatial analysis is by projec
 
 Almost all of us can agree at this point that the world is a three-dimensional (and slighty smooshed) sphere. However, many spatial algorithms operate under the rustic assumptions of two-dimensional euclidean geometry. When your input is defined in terms of latitude and longitude, the first step is to flatten (or "project") it onto 2D space.
 
-It turns out there are lots of different ways to flatten a 3D thing into 2D space, and all of them are wrong. The art of the geospatial analyst is picking the projection that is *least* wrong for your particular use case. Some projection methods are finely tuned for high accuracy within a relatively small geographic area (e.g. [Zone 5 in Southern California](https://www.conservation.ca.gov/cgs/rgm/state-plane-coordinate-system#zone5)), but try to use that same projection for something in [New York](https://en.wikipedia.org/wiki/New_York_City) (or, *gasp*, [old York](https://en.wikipedia.org/wiki/York)) and your results will be way off! For analysis spanning an entire continent, or something global, more general projections exist which, while maybe not as accurate for the local regions involved, will minimize error overall.
+It turns out there are lots of different ways to flatten a 3D thing into 2D space, and all of them are wrong. The art of the geospatial analyst is picking the projection that is *least* wrong for your particular use case. Some projection methods are finely tuned for high accuracy within a relatively small geographic area (e.g. [Zone 5 in Southern California](https://www.conservation.ca.gov/cgs/rgm/state-plane-coordinate-system#zone5)), but try to use that same projection for something in [New York](https://en.wikipedia.org/wiki/New_York_City) (or, *gasp*, [old York](https://en.wikipedia.org/wiki/York)) and your results will be way off! For analysis spanning an entire continent, or something global, more general projections exist which, while not as accurate for the local regions involved, will minimize error overall.
 
 Everything about this would be easier if the flat-earthers were right, but fortunately there are several well-rounded tools for our mostly-round earth.
 
@@ -30,7 +30,7 @@ This is the Ivanhoe reservoir in Los Angeles. Named after Sir Walter Scott's *Iv
 
 ### Just Get to the Point
 
-OK OK OK. We can use the `wkt` crate to read `geo` geometries from the text representation of this point in the center of the water.
+OK OK OK. We can use the `wkt` crate to create a `geo` geometry from the text representation of this point in the center of the water.
 
 ```rust
 use geo::Point;
@@ -44,11 +44,11 @@ assert_eq!(point.y(), 34.103175);
 
 #### Traits
 
-From the above example, consider `Point::try_from_wkt_str`. The [`Point`](https://docs.rs/geo/latest/geo/struct.Point.html) type, from the `geo` crate, calls the [`try_from_wkt_str`](https://docs.rs/wkt/latest/wkt/trait.TryFromWkt.html) method,from the `wkt` crate. Depending on your background, this kind of cross-library interaction may feel either completely horrifying or utterly unremarkable. Many languages, like C++ or Java, don't really support adding methods to existing types like this. With more dynamic languages, like Ruby or Python, you can easily do all kinds of fun things like replace or add methods at runtime.
+From the above example, consider the code: `Point::try_from_wkt_str`. The [`Point`](https://docs.rs/geo/latest/geo/struct.Point.html) type, from the `geo` crate, calls the [`try_from_wkt_str`](https://docs.rs/wkt/latest/wkt/trait.TryFromWkt.html) method, from the `wkt` crate. Depending on your background, this kind of cross-library interaction may feel either completely horrifying or utterly unremarkable. Many languages, like C++ or Java, don't really support adding methods to existing types like this. With more dynamic languages, like Ruby or Python, you can easily do all kinds of fun things like replace or add methods at runtime.
 
-You must always reap what you sew, and unintentionally clobbering some existing method definition defined in a third party module can leave a bad taste in your mouth. For that reason, even where supported, these kinds of language gymnastics are often best avoided.
+However, ultimately you reap what you sew, and unintentionally clobbering some existing method definition defined in a third party module can leave a bad taste in your mouth. For that reason, even where supported, these kinds of language gymnastics are often best avoided.
 
-Rust tries to take an enlightened middle ground with it's trait system, which allows adding shared functionality to existing types, but *only* in some carefully prescribed ways which avoid many of the problems with the more liberal approaches. Rust's trait system is a core component of the language, so I won't try to further summarize it here. You should read more in the [official documentation about traits](https://doc.rust-lang.org/book/ch10-02-traits.html).
+Rust tries to take an enlightened middle ground with it's trait system, which allows adding shared functionality to existing types, but *only* in some carefully prescribed ways which avoids many of the problems with more liberal approaches. Rust's trait system is a core component of the language, so I won't try to further summarize it here. You can read more in the [official documentation about traits](https://doc.rust-lang.org/book/ch10-02-traits.html).
 
 The main take away at this point is this: **In Rust, functionality is often defined in terms of traits**. You'll need to `use` both the traits and the types which implement those traits, in this case `wkt::TryFromWkt` and `geo::Point` respectively, to be effective.
 
