@@ -3,7 +3,7 @@ authors = ["Michael Kirk"]
 language = "en"
 multilingual = false
 src = "src"
-title = "TRusty Ol' Map"
+title = "Getting Started with Geospatial in Rust"
 
 [output.html.playground]
 runnable = false
