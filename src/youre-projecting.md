@@ -4,11 +4,13 @@ Just like any good argument, the best way to start spatial analysis is by projec
 
 Almost all of us can agree at this point that the world is a three-dimensional (and slighty smooshed) sphere. However, many spatial algorithms operate under the rustic assumptions of two-dimensional euclidean geometry. When your input is defined in terms of latitude and longitude, the first step is to flatten (or "project") it onto 2D space.
 
+It turns out there are lots of different ways to flatten a 3D thing into 2D space, and all of them are wrong. The art of the geospatial analyst is picking the projection that is *least* wrong for your particular use case. Some projection methods are finely tuned for high accuracy within a relatively small geographic area (e.g. [Zone 5 in Southern California](https://www.conservation.ca.gov/cgs/rgm/state-plane-coordinate-system#zone5)), but try to use that same projection for something in [New York](https://en.wikipedia.org/wiki/New_York_City) (or, *gasp*, [old York](https://en.wikipedia.org/wiki/York)) and your results will be way off! For analysis spanning an entire continent, or something global, more general projections exist which, while maybe not as accurate for the local regions involved, will minimize error overall.
+
 Everything about this would be easier if the flat-earthers were right, but fortunately there are several well-rounded tools for our mostly-round earth.
 
 ## Using `wkt` and `proj` to Project Geometries
 
-[PROJ](https://proj.org) has been helping people solve this type of problem since the late 1970's, but in addition to its longevity, it also stands out for its accuracy and speed. The [proj crate](https://crates.io/crates/proj) wraps and extends PROJ to make it feel right at home in your Rust application. For its part, [well-known text](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry) (WKT) is a very (sigh) well-known way of representing geometry, and the [wkt crate](https://crates.io/crates/wkt) adds read and write support for WKT to Rust.
+The [PROJ](https://proj.org) software has been helping people solve this type of problem since the late 1970's. In addition to its longevity, it also stands out for its accuracy and speed. The [proj crate](https://crates.io/crates/proj) wraps and extends PROJ to make it feel right at home in your Rust application. For its part, [well-known text](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry) (WKT) is a very (sigh) well-known way of representing geometry, and the [wkt crate](https://crates.io/crates/wkt) adds read and write support for WKT to Rust.
 
 Finally, we'll be using the [geo crate](https://crates.io/crates/geo) (a collection of geometry types and algorithms) to do some analysis.
 
@@ -59,7 +61,7 @@ assert_eq!(point.x(), 1975508.4666086377);
 assert_eq!(point.y(), 566939.9943794473);
 ```
 
-If we want to export or share our results, the `wkt` crate can serialize the projected geometry back to well-known text.
+If we want to export or share our results, the `wkt` crate can serialize the point's in memory representation back to well-known text.
 ```rust
 # use geo::Point;
 # use wkt::TryFromWkt;
@@ -76,7 +78,7 @@ If we want to export or share our results, the `wkt` crate can serialize the pro
 use wkt::ToWkt;
 let wkt_output = point.wkt_string();
 
-assert_eq!("POINT(1975508.4666086377 566939.9943794473)", wkt_output);
+assert_eq!(wkt_output, "POINT(1975508.4666086377 566939.9943794473)");
 ```
 
 ### Connect the Dots
@@ -99,9 +101,9 @@ let mut polygon: Polygon<f64> = Polygon::try_from_wkt_str(wkt_polygon).unwrap();
 assert_eq!(polygon.unsigned_area(), 0.000002779367475015937);
 ```
 
-Ivanhoe reservoir is large enough to hold over 400,000 [shade balls](https://en.wikipedia.org/wiki/Shade_balls), so any area measurement that begins with `0.00000...` is highly suspect. Because we were dealing with unprojected coordinates, the units of area we just computed are "square degrees," which isn't very useful. A degree near the North Pole is very different from a degree near the equator (and not just in terms of temperature).
+Ivanhoe reservoir is large enough to hold over 400,000 [shade balls](https://en.wikipedia.org/wiki/Shade_balls), so any area measurement that begins with `0.00000...` is highly suspect. Because our polygon was described in degrees (unprojected coordinates), the units of area we just computed are "square degrees," which is not a very useful measurement. A degree near the North Pole is very different from a degree near the equator (and not just in terms of temperature).
 
-Instead, we should first project this geometry to a euclidean coordinate reference system suitable for Los Angeles.
+To get a reasonable result, we should first project the polygon to a euclidean coordinate reference system suitable for Los Angeles.
 
 ```rust
 # use geo::Polygon;
@@ -120,8 +122,8 @@ polygon.transform_crs_to_crs("WGS84", "EPSG:6423").unwrap();
 assert_eq!(polygon.unsigned_area(), 28446.893084917097);
 ```
 
-Notice that we can utilize the same type of transformation logic for this polygon that we were previously using for a single point. Now we know that approximately 28.4k square meters are required to hold 400k floating spheres in one small spot on the floating (slightly smooshed) sphere we call home, and we've solved a story problem that we were never even asked.
+Notice that we can transform this polygon the same way we previously transformed a single point. Now we know that approximately 28.4k square meters are required to hold 400k floating spheres in one small spot on the floating (slightly smooshed) sphere we call home, and we've solved a story problem that we were never even asked.
 
 ## Working with What You've Got
 
-That's a quick look at some of the basics. Let's explore how we can use geometry objects that are pulled from the serialized formats that you already have.
+That's a quick look at some of the basics of working with geometry in Rust. Next, we'll go beyond just the shape of things by diving into file formats like CSV and GeoJSON that can attribute other data alongside the shape of a feature.
