@@ -42,7 +42,19 @@ assert_eq!(point.x(), -118.265429);
 assert_eq!(point.y(), 34.103175);
 ```
 
-The `proj` crate projects geometries into a different [coordinate reference system](https://en.wikipedia.org/wiki/Spatial_reference_system). Let's transform this point from latitude and longitude, technically known as [*The World Geodetic System*](https://en.wikipedia.org/wiki/World_Geodetic_System), to the [California State Plane Coordinate System](https://www.conservation.ca.gov/cgs/rgm/state-plane-coordinate-system).
+#### Traits
+
+From the above example, consider `Point::try_from_wkt_str`. The [`Point`](https://docs.rs/geo/latest/geo/struct.Point.html) type, from the `geo` crate, calls the [`try_from_wkt_str`](https://docs.rs/wkt/latest/wkt/trait.TryFromWkt.html) method,from the `wkt` crate. Depending on your background, this kind of cross-library interaction may feel either completely horrifying or utterly unremarkable. Many languages, like C++ or Java, don't really support adding methods to existing types like this. With more dynamic languages, like Ruby or Python, you can easily do all kinds of fun things like replace or add methods at runtime.
+
+You must always reap what you sew, and unintentionally clobbering some existing method definition defined in a third party module can leave a bad taste in your mouth. For that reason, even where supported, these kinds of language gymnastics are often best avoided.
+
+Rust tries to take an enlightened middle ground with it's trait system, which allows adding shared functionality to existing types, but *only* in some carefully prescribed ways which avoid many of the problems with the more liberal approaches. Rust's trait system is a core component of the language, so I won't try to further summarize it here. You should read more in the [official documentation about traits](https://doc.rust-lang.org/book/ch10-02-traits.html).
+
+The main take away at this point is this: **In Rust, functionality is often defined in terms of traits**. You'll need to `use` both the traits and the types which implement those traits, in this case `wkt::TryFromWkt` and `geo::Point` respectively, to be effective.
+
+## Trait-er
+
+Another useful trait is the [`Transform`](https://docs.rs/proj/latest/proj/trait.Transform.html) trait, provided by the `proj` crate, which can be used to project geometries into a different [coordinate reference system](https://en.wikipedia.org/wiki/Spatial_reference_system). Let's transform this point from latitude and longitude, technically known as [*The World Geodetic System*](https://en.wikipedia.org/wiki/World_Geodetic_System), to the [California State Plane Coordinate System](https://www.conservation.ca.gov/cgs/rgm/state-plane-coordinate-system).
 
 ```rust
 # use geo::Point;
