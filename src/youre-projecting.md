@@ -17,9 +17,9 @@ Finally, we'll be using the [geo crate](https://crates.io/crates/geo) (a collect
 To get started, let's add these dependencies to our `Cargo.toml` file.
 ```toml,ignore
 [dependencies]
-geo = "0.20.1"
-proj = "0.26.0"
-wkt = "0.10.1"
+geo = "0.21.0"
+proj = "0.27.0"
+wkt = "0.10.3"
 ```
 
 OK, now let's look for a body of water and dive right in.

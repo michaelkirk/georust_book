@@ -6,9 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-geo = "0.20.1"
-proj = "0.26.0"
-wkt = "0.10.1"
+geo = "0.21.0"
+proj = "0.27.0"
+wkt = "0.10.3"
 
-[patch.crates-io]
-wkt = { git = "https://github.com/georust/wkt", branch = "release/0.10.1" }
