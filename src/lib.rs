@@ -1,7 +1,8 @@
 #[doc = include_str!("./youre-projecting.md")]
-#[cfg(doctest)]
-pub struct ConvertingAProjectionDoctests;
+pub struct A1YourProjecting;
+
+#[doc = include_str!("./creature-feature.md")]
+pub struct A2CreatureFeature;
 
 #[doc = include_str!("./join-the-party.md")]
-#[cfg(doctest)]
-pub struct JoinThePartyDoctests;
+pub struct A3JoinTheParty;
