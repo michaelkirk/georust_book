@@ -131,7 +131,7 @@ use proj::Transform;
 polygon.transform_crs_to_crs("WGS84", "EPSG:6423").unwrap();
 
 // Now we can get a useful "square meters" measurement.
-assert_eq!(polygon.unsigned_area(), 28446.893084917097);
+assert_eq!(polygon.unsigned_area().round(), 28447.0);
 ```
 
 Notice that we can transform this polygon the same way we previously transformed a single point. Now we know that approximately 28.4k square meters are required to hold 400k floating spheres in one small spot on the floating (slightly smooshed) sphere we call home, and we've solved a story problem that we were never even asked.
