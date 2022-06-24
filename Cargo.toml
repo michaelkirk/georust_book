@@ -6,7 +6,18 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+
+# Article 1
 geo = "0.21.0"
 proj = "0.27.0"
-wkt = "0.10.3"
+# NOTE: serde feature is only used for Article 2
+wkt = { version = "0.10.3", features = ["serde"] }
 
+# TODO: separate each article into a different crate so I can include the redundant crates, like geo/wkt in each example. I think this will make it easier to include the reqs in each article.
+# Article 2
+csv = { version = "1.1.6" }
+serde = { version = "1.0.137", features = ["derive"] }
+
+[patch.crates-io]
+geo = { path = "../geo/geo" }
+geo-types = { path = "../geo/geo-types" }

@@ -28,6 +28,8 @@ And here's how we might tally up how many bridges cross a particular creek, also
 
 ```rust
 use csv;
+use geo::algorithm::Area;
+use geo::geometry::MultiPolygon;
 use wkt;
 
 struct Creek {
@@ -37,33 +39,43 @@ struct Creek {
 }
 
 // For each creek, count the number of bridges, and keep track of the largest bridge (by area)
+use std::collections::HashMap;
 let mut creeks: HashMap<String, Creek> = HashMap::new();
 
-let csv_reader = csv::open("philly_waterways.csv");
-for waterway_segment in csv_reader.rows() {
-  let infrastructure_label = waterway_segment.get("inf1").expect("missing 'inf1' field");
+let mut csv_reader = {
+  use std::fs::File;
+  let file = File::open("philly_waterways.csv").expect("invalid file");
+  csv::Reader::from_reader(file)
+};
+
+for row in csv_reader.records() {
+  let waterway_segment = row.expect("unable to read row from CSV");
+
+  let infrastructure_label = waterway_segment.get(1).expect("missing 'inf1' field");
 
   if infrastructure_label != "Bridged" {
     continue;
   }
 
-  let creek_name = waterway_segment.get("creek_name").expect("missing 'creek_name' field");
-  let geometry = waterway_segment.get("geometry").expect("missing `geometry` field");
-  let bridge_area = waterway_segment.geometry.unsigned_area();
+  let creek_name = waterway_segment.get(0).expect("missing 'creek_name' field");
+  let geometry_str = waterway_segment.get(2).expect("missing `geometry` field");
+  use wkt::TryFromWkt;
+  let geometry = MultiPolygon::try_from_wkt_str(geometry_str).expect("invalid wkt");
+  let bridge_area = geometry.unsigned_area();
 
-  if let Some(&mut existing_entry) = bridges.get_mut(creek_name) {
+  if let Some(mut existing_entry) = creeks.get_mut(creek_name) {
       println!("adding bridge to {creek_name}");
       existing_entry.bridge_count += 1;
       if bridge_area > existing_entry.largest_bridge_area {
-        largest_bridge_area = bridge_area
+        existing_entry.largest_bridge_area = bridge_area
       }
   } else {
     let new_creek = Creek {
-      name: creek_name.clone(),
+      name: creek_name.to_string(),
       bridge_count: 1,
       largest_bridge_area: bridge_area
     };
-    creeks.insert(creek_name, new_creek);
+    creeks.insert(creek_name.to_string(), new_creek);
   }
 }
 
@@ -79,9 +91,9 @@ __mjk: this code block feels pretty large.__
 Neat huh? One thing you may have noticed is the repetitive nature of all the error checking:
 
 ```rust,ignore
-let infrastructure_label = waterway_segment.get("inf1").expect("missing 'inf1' field");
-let creek_name = waterway_segment.get("creek_name").expect("missing 'creek_name' field");
-let geometry = waterway_segment.get("geometry").expect("missing `geometry` field");
+let creek_name = waterway_segment.get(0).expect("missing 'creek_name' field");
+let infrastructure_label = waterway_segment.get(1).expect("missing 'inf1' field");
+let geometry = waterway_segment.get(2).expect("missing `geometry` field");
 ```
 
 For each row in the CSV, getting fields by name in an ad-hoc fashion, is simple, but a bit loosey goosey. And it requires some rote error checking code. If we want to add a little more *struct*ure to the world, we can parse each row into a rigidly `defined struct` leveraging the excellent [`serde`](https://serde.rs) crate. This gives us a concise way to declare what we expect to be in our input and avoids writing out some repetitive error checking code.
@@ -105,21 +117,54 @@ struct CreekSegment {
   #[serde(rename = "inf1" )]
   infrastructure_label: String,
 
-  #[serde(deserialize = "wkt::deserialize" )]
-  geometry: MultiPolygon<f64>
+  #[serde(deserialize_with = "wkt::deserialize_wkt")]
+  geometry: geo::geometry::MultiPolygon
 }
 ```
 
 Notice how each field in the `CreekSegment` struct corresponds to the columns in our CSV input. Now, when we read the CSV, we tell our csv reader that we expect each row to have this form, and the compiler will write all the error checking code for us.
 
 ```rust
-let csv_reader = csv::open("philly_waterways.csv");
+# use csv;
+# use geo::algorithm::Area;
+# use geo::geometry::MultiPolygon;
+# use wkt;
+#
+# #[derive(serde::Deserialize)]
+# struct CreekSegment {
+#   creek_name: String,
+#   watershed: String,
+#
+#   // To use a more descriptive name for this field than our source CSV uses,
+#   // serde offers some customiziations.
+#   #[serde(rename = "inf1" )]
+#   infrastructure_label: String,
+#
+#   #[serde(deserialize_with = "wkt::deserialize_wkt")]
+#   geometry: geo::geometry::MultiPolygon<f64>
+# }
+#
+# let mut csv_reader = {
+#   use std::fs::File;
+#   let file = File::open("philly_waterways.csv").expect("invalid file");
+#   csv::Reader::from_reader(file)
+# };
+#
+# struct Creek {
+#   name: String,
+#   bridge_count: usize,
+#   largest_bridge_area: f64,
+# }
+#
+# use std::collections::HashMap;
+# // For each creek, count the number of bridges, and keep track of the largest bridge (by area)
+# let mut creeks: HashMap<String, Creek> = HashMap::new();
 
 // Here's where we tell the csv reader that each row should be deserializable as a CreekSegment.
-for row in csv_reader.rows<CreekSegment>() {
+for row in csv_reader.deserialize::<CreekSegment>() {
 
   // And this line replaces all of our per-field error checking.
-  let creek_segment: CreekSegment = row?;
+  let creek_segment: CreekSegment = row.expect("invalid creek segment");
 
   // From this point on, we can rest assured that all the fields of
   // `creek_segment` have been successfully populated.
@@ -132,20 +177,20 @@ for row in csv_reader.rows<CreekSegment>() {
   // but you can reveal it by clicking the icon at the top right.
 
 #   let bridge_area = creek_segment.geometry.unsigned_area();
-#
-#   if let Some(&mut existing_entry) = bridges.get_mut(creek_name) {
+#   let creek_name = creek_segment.creek_name;
+#   if let Some(mut existing_entry) = creeks.get_mut(&creek_name) {
 #       println!("adding bridge to {creek_name}");
 #       existing_entry.bridge_count += 1;
 #       if bridge_area > existing_entry.largest_bridge_area {
-#         largest_bridge_area = bridge_area
+#         existing_entry.largest_bridge_area = bridge_area
 #       }
 #   } else {
 #     let new_creek = Creek {
-#       name: creek_segment.creek_name.clone(),
+#       name: creek_name.clone(),
 #       bridge_count: 1,
 #       largest_bridge_area: bridge_area
 #     };
-#     creeks.insert(creek_segment.creek_name, new_creek);
+#     creeks.insert(creek_name, new_creek);
 #   }
 }
 #
@@ -157,10 +202,24 @@ for row in csv_reader.rows<CreekSegment>() {
 
 Using structs just gives you a way to put a little more order into your work. And it gives you a place to add functionality. For example:
 
-
 ```rust
-impl Creek {
+# #[derive(serde::Deserialize)]
+# struct CreekSegment {
+#   creek_name: String,
+#   watershed: String,
+#
+#   // To use a more descriptive name for this field than our source CSV uses,
+#   // serde offers some customiziations.
+#   #[serde(rename = "inf1" )]
+#   infrastructure_label: String,
+#
+#   #[serde(deserialize_with = "wkt::deserialize_wkt" )]
+#   geometry: geo::geometry::MultiPolygon
+# }
+
+impl CreekSegment {
   fn bridge_area(&self) -> f64 {
+    use geo::algorithm::Area;
     self.geometry.unsigned_area()
   }
 }
@@ -188,7 +247,7 @@ GeoJSON has a built in way of expressing attributes *along side* the geometry.
 Beyond web applications, many other geospatial tools can interoperate with geojson - e.g. qgis.
 
 ```rust
-TODO: geojson parsing example
+// TODO: geojson parsing example
 ```
 
 Downsides: It's geometry representation is quite verbose (not efficient for humans to read or store/transmit), it's not super readable. Spreadsheets are efficient for editing CSV's. It lacks a spatial index (future topic!), so certain geometric operations are slow. For more efficient alternatives (that have other tradeoffs), rust has support for:
