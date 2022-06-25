@@ -6,13 +6,17 @@ Almost all of us can agree at this point that the world is a three-dimensional (
 
 ## In-depth Perception
 
-There are lots of ways to flatten a 3D thing into a 2D space, and all of them can be the wrong choice in different contexts. The art of the geospatial analyst is to pick the projection that is the *least* wrong for a particular use case.
+There are lots of ways to flatten a 3D thing into a 2D space, but this process inherently introduces some distortion (like an orange getting smashed in your backpack). Choosing the best possible "projection" for a given scenario is part of the art of being a geospatial analyst.
 
-For example, some projection methods are finely tuned for high accuracy within a relatively small geographic area (e.g. [Zone 5 in Southern California](https://www.conservation.ca.gov/cgs/rgm/state-plane-coordinate-system#zone5)), but if you try to use that same projection for something in [New York](https://en.wikipedia.org/wiki/New_York_City) (or, *alas and alack*, [old York](https://en.wikipedia.org/wiki/York)) your results will be way off! More general projections exist for analyses that span an entire continent which will minimize overall errors for calculations over large areas, even though they won't be as accurate for the local regions involved.
+For applications spanning the globe, web mercator is a common projection as it minimizes distortion for the majority of the inhabited planet. However, if you're focused on relative distance from a particular point, a Gnomonic projection might be a better choice.
+
+<img of web merc> | <img of gnomic projection>
+
+If your work is more local in nature, you can use a projection method that is finely tuned for high accuracy within a relatively small and specific geographic area like [Zone 5 in Southern California](https://www.conservation.ca.gov/cgs/rgm/state-plane-coordinate-system#zone5), but if you try to use that same projection for something in [New York](https://en.wikipedia.org/wiki/New_York_City) (or, *alas and alack*, [old York](https://en.wikipedia.org/wiki/York)) your results will be way off!
 
 Everything about this would be easier if the flat-earthers were right, but fortunately there are several well-rounded tools for our mostly-round earth.
 
-## Co-Dependent Relationships
+## Co-Dependency
 
 Our first group project(ion) will require some new dependencies.
 
@@ -151,4 +155,4 @@ Notice that we can transform this polygon the same way we previously transformed
 
 ## Working with What You've Got
 
-That's a quick look at some of the basics of working with geometry in Rust. Next, we'll go beyond the outline by diving into file formats like CSV and GeoJSON that can store attributes and other data alongside the shape of a feature.
+That's a quick look at some of the basics of working with geometry in Rust. Next, we'll take a look at how to use file formats like CSV and GeoJSON that support *features* to go beyond just the shape of things.
