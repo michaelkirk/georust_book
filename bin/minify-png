@@ -6,6 +6,12 @@ then
     exit 1
 fi
 
+while test $# -gt 0
+do
+
 INPUT=$1
 TMP_FILE="${1}-tmp.png"
 pngquant $INPUT --output "$TMP_FILE" && mv "$TMP_FILE" $INPUT
+
+shift
+done

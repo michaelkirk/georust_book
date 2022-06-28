@@ -57,3 +57,12 @@ Emails: contact email addresses
 Phones: contact phone numbers
 Websites: the official site of the concession
 Locations: the latitude and longitude of the concession.
+
+## Philly Waterways
+
+Downloaded geojson from https://www.opendataphilly.org/dataset/hydrology
+converted to csv: geozero philly_waterways.geojson philly_waterways.csv
+Opened in spreadsheet app (Numbers.app): 
+  - deleted columns except: geometry, creek_name, and inf1
+  - reordered geometry to be last column
+  - lowercased remaining columns
