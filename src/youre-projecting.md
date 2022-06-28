@@ -2,19 +2,31 @@
 
 Just like any good argument, the best way to start spatial analysis is by projecting your points.
 
-Almost all of us can agree at this point that the world is a three-dimensional (and slighty smooshed) sphere. However, many spatial algorithms operate under the rustic assumptions of two-dimensional euclidean geometry. When your input is defined in terms of latitude and longitude, the first step is to flatten (or "project") it onto 2D space.
+Almost all of us can agree at this point that the world is a three-dimensional (and slightly smooshed) sphere. However, many spatial algorithms operate under the rustic assumptions of two-dimensional [euclidean geometry](https://en.wikipedia.org/wiki/Euclidean_geometry). When your input is defined in terms of latitude and longitude, the first step is to flatten (or "project") it onto 2D space.
 
-It turns out there are lots of different ways to flatten a 3D thing into 2D space, and all of them are wrong. The art of the geospatial analyst is picking the projection that is *least* wrong for your particular use case. Some projection methods are finely tuned for high accuracy within a relatively small geographic area (e.g. [Zone 5 in Southern California](https://www.conservation.ca.gov/cgs/rgm/state-plane-coordinate-system#zone5)), but try to use that same projection for something in [New York](https://en.wikipedia.org/wiki/New_York_City) (or, *gasp*, [old York](https://en.wikipedia.org/wiki/York)) and your results will be way off! For analysis spanning an entire continent, or something global, more general projections exist which, while not as accurate for the local regions involved, will minimize error overall.
+## In-depth Perception
+
+There are lots of ways to flatten a 3D thing into a 2D space, but this process inherently introduces some distortion (like an orange getting smashed in your backpack). Choosing the best possible "projection" for a given scenario is part of the art of being a geospatial analyst.
+
+For applications spanning the globe, web mercator is a common projection as it minimizes distortion for the majority of the inhabited planet. However, if you're focused on relative distance from a particular point, a Gnomonic projection might be a better choice.
+
+<img of web merc> | <img of gnomic projection>
+
+If your work is more local in nature, you can use a projection method that is finely tuned for high accuracy within a relatively small and specific geographic area like [Zone 5 in Southern California](https://www.conservation.ca.gov/cgs/rgm/state-plane-coordinate-system#zone5), but if you try to use that same projection for something in [New York](https://en.wikipedia.org/wiki/New_York_City) (or, *alas and alack*, [old York](https://en.wikipedia.org/wiki/York)) your results will be way off!
 
 Everything about this would be easier if the flat-earthers were right, but fortunately there are several well-rounded tools for our mostly-round earth.
 
-## Using `wkt` and `proj` to Project Geometries
+## Co-Dependency
 
-The [PROJ](https://proj.org) software has been helping people solve this type of problem since the late 1970's. In addition to its longevity, it also stands out for its accuracy and speed. The [proj crate](https://crates.io/crates/proj) wraps and extends PROJ to make it feel right at home in your Rust application. For its part, [well-known text](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry) (WKT) is a very (sigh) well-known way of representing geometry, and the [wkt crate](https://crates.io/crates/wkt) adds read and write support for WKT to Rust.
+Our first group project(ion) will require some new dependencies.
+
+The [PROJ](https://proj.org) coordinate transformation software has been helping people solve geospatial problems since the late 1970's. In addition to its longevity, it also stands out for its accuracy and speed. The [proj crate](https://crates.io/crates/proj) wraps and extends PROJ to make it feel right at home in your Rust application.
+
+For its part, [well-known text](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry) (WKT) is a very (sigh) well-known way of representing geometry, and the [wkt crate](https://crates.io/crates/wkt) adds read and write support for WKT to Rust.
 
 Finally, we'll be using the [geo crate](https://crates.io/crates/geo) (a collection of geometry types and algorithms) to do some analysis.
 
-To get started, let's add these dependencies to our `Cargo.toml` file.
+Let's add these dependencies to our `Cargo.toml` file and get started:
 ```toml,ignore
 [dependencies]
 geo = "0.21.0"
@@ -42,19 +54,23 @@ assert_eq!(point.x(), -118.265429);
 assert_eq!(point.y(), 34.103175);
 ```
 
-#### Traits
+#### Personality Traits
 
-From the above example, consider the code: `Point::try_from_wkt_str`. The [`Point`](https://docs.rs/geo/latest/geo/struct.Point.html) type, from the `geo` crate, calls the [`try_from_wkt_str`](https://docs.rs/wkt/latest/wkt/trait.TryFromWkt.html) method, from the `wkt` crate. Depending on your background, this kind of cross-library interaction may feel either completely horrifying or utterly unremarkable. Many languages, like C++ or Java, don't really support adding methods to existing types like this. With more dynamic languages, like Ruby or Python, you can easily do all kinds of fun things like replace or add methods at runtime.
+Let's focus on this section of code from the example above: `Point::try_from_wkt_str`.
 
-However, ultimately you reap what you sew, and unintentionally clobbering some existing method definition defined in a third party module can leave a bad taste in your mouth. For that reason, even where supported, these kinds of language gymnastics are often best avoided.
+The [`Point`](https://docs.rs/geo/latest/geo/struct.Point.html) type, from the **`geo`** crate, calls the [`try_from_wkt_str`](https://docs.rs/wkt/latest/wkt/trait.TryFromWkt.html) method, from the **`wkt`** crate. Depending on your personality and background, this kind of cross-library interaction may feel either completely horrifying or utterly unremarkable. Many languages, like C++ or Java, don't really support adding methods to existing types like this, but more dynamic languages, like Ruby or Python, let you easily do all kinds of fun things like replacing or adding methods at runtime.
 
-Rust tries to take an enlightened middle ground with it's trait system, which allows adding shared functionality to existing types, but *only* in some carefully prescribed ways which avoids many of the problems with more liberal approaches. Rust's trait system is a core component of the language, so I won't try to further summarize it here. You can read more in the [official documentation about traits](https://doc.rust-lang.org/book/ch10-02-traits.html).
+However, ultimately you reap what you sow. Unintentionally clobbering some existing method definition that was defined in a third-party module can quickly make "fun things" feel decidedly less fun. For that reason, even when they are supported, people often try to avoid these kinds of language gymnastics.
 
-The main take away at this point is this: **In Rust, functionality is often defined in terms of traits**. You'll need to `use` both the traits and the types which implement those traits, in this case `wkt::TryFromWkt` and `geo::Point` respectively, to be effective.
+Rust tries to take an enlightened middle ground with its trait system. Rust supports adding shared functionality to existing types, but only in some *carefully* prescribed ways which avoid many of the problems with less-restrictive approaches. Rust's trait system is a core component of the language, and you can (and should!) read more about it in the [official documentation about traits](https://doc.rust-lang.org/book/ch10-02-traits.html).
 
-## Trait-er
+The main takeaway for now is this: **In Rust, functionality is often defined in terms of traits** and in order to be effective you'll need to `use` both the traits and the types which implement those traits (in this case `use wkt::TryFromWkt` and `use geo::Point` respectively).
 
-Another useful trait is the [`Transform`](https://docs.rs/proj/latest/proj/trait.Transform.html) trait, provided by the `proj` crate, which can be used to project geometries into a different [coordinate reference system](https://en.wikipedia.org/wiki/Spatial_reference_system). Let's transform this point from latitude and longitude, technically known as [*The World Geodetic System*](https://en.wikipedia.org/wiki/World_Geodetic_System), to the [California State Plane Coordinate System](https://www.conservation.ca.gov/cgs/rgm/state-plane-coordinate-system).
+## Trait-or
+
+Another useful trait is the [`Transform`](https://docs.rs/proj/latest/proj/trait.Transform.html) trait, provided by the `proj` crate, which can be used to project geometries into a different [coordinate reference system](https://en.wikipedia.org/wiki/Spatial_reference_system).
+
+Let's betray latitude and longitude, technically known as [*The World Geodetic System*](https://en.wikipedia.org/wiki/World_Geodetic_System), and transform our point in the center of the Ivanhoe reservoir to the [California State Plane Coordinate System](https://www.conservation.ca.gov/cgs/rgm/state-plane-coordinate-system).
 
 ```rust
 # use geo::Point;
@@ -73,7 +89,8 @@ assert_eq!(point.x(), 1975508.4666086377);
 assert_eq!(point.y(), 566939.9943794473);
 ```
 
-If we want to export or share our results, the `wkt` crate can serialize the point's in memory representation back to well-known text.
+If we want to export or share our results, the `wkt` crate can serialize a point's in-memory representation back to well-known text.
+
 ```rust
 # use geo::Point;
 # use wkt::TryFromWkt;
@@ -113,9 +130,9 @@ let mut polygon: Polygon<f64> = Polygon::try_from_wkt_str(wkt_polygon).unwrap();
 assert_eq!(polygon.unsigned_area(), 0.000002779367475015937);
 ```
 
-Ivanhoe reservoir is large enough to hold over 400,000 [shade balls](https://en.wikipedia.org/wiki/Shade_balls), so any area measurement that begins with `0.00000...` is highly suspect. Because our polygon was described in degrees (unprojected coordinates), the units of area we just computed are "square degrees," which is not a very useful measurement. A degree near the North Pole is very different from a degree near the equator (and not just in terms of temperature).
+Ivanhoe reservoir is large enough to hold over 400,000 [shade balls](https://en.wikipedia.org/wiki/Shade_balls), so any area measurement that begins with `0.00000...` is highly suspect. Because our polygon was described in degrees (unprojected coordinates), the units of area we just computed are in "square degrees" which is not a very useful measurement. A degree near the North Pole is very different from a degree near the equator (and not just in terms of temperature).
 
-To get a reasonable result, we should first project the polygon to a euclidean coordinate reference system suitable for Los Angeles.
+To get a reasonable result, we should first project the polygon to a euclidean coordinate reference system that is suitable for Los Angeles.
 
 ```rust
 # use geo::Polygon;
@@ -138,4 +155,4 @@ Notice that we can transform this polygon the same way we previously transformed
 
 ## Working with What You've Got
 
-That's a quick look at some of the basics of working with geometry in Rust. Next, we'll go beyond just the shape of things by diving into file formats like CSV and GeoJSON that can attribute other data alongside the shape of a feature.
+That's a quick look at some of the basics of working with geometry in Rust. Next, we'll take a look at how to use file formats like CSV and GeoJSON that support *features* to go beyond just the shape of things.
