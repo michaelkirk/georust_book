@@ -14,7 +14,7 @@ Fortunately for us, we also have a list of every public water fountain that will
 
 ## Filtered Water
 
-We have two different data source — water fountains and parks. Solving spatial problems often involves finding ways to stir things up. Let's see how many of these parks have water fountains in them:
+We have two different data source — water fountains and parks. Solving spatial problems often involves finding ways to stir things up. Let's see how many of these water fountains are inside of parks:
 
 ```rust
 use geo::{GeometryCollection, MultiPoint};
