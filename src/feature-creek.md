@@ -299,7 +299,7 @@ Another problem with CSV files is that it's not always clear what type of inform
 | ...                   | ...         |
 | 1-818-912-8200 ext. 4 | office      |
 
-Unless you examine the entire list in advance, you might not realize that `phone` is a text column, not a numeric one. Some file formats are always clear about the distinction between numbers and text, but CSV isn't one of them.
+Unless you examine the entire list in advance, you might not realize that `phone` is a text column, not a numeric one. Some formats are always clear about the distinction between numbers and text, but CSV isn't one of them.
 
 The lack of standardization means that whenever you encounter geographic data stored in a CSV, first you have to dig around a bit to orient yourself and figure out how to align your program with the CSV author's conventions.
 
