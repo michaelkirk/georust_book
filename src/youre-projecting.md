@@ -2,13 +2,13 @@
 
 Just like any good argument, the best way to start spatial analysis is by projecting your points.
 
-Almost all of us can agree at this point that the world is a three-dimensional (and slightly smooshed) sphere. However, many spatial algorithms operate under the rustic assumptions of two-dimensional [euclidean geometry](https://en.wikipedia.org/wiki/Euclidean_geometry). When your input is defined in terms of latitude and longitude, the first step is to flatten (or "project") it onto 2D space.
+Almost everyone agrees that the world is a three-dimensional (and slightly smooshed) sphere. However, many spatial algorithms operate under the rustic assumptions of two-dimensional [euclidean geometry](https://en.wikipedia.org/wiki/Euclidean_geometry). When your input is defined in terms of latitude and longitude, the first step is to flatten (or "project") it onto 2D space.
 
 ## In-depth Perception
 
 There are lots of ways to flatten a 3D thing into a 2D space, but this process inherently introduces some distortion (like an orange getting smashed in your backpack). Choosing the best possible "projection" for a given scenario is part of the art of being a geospatial analyst.
 
-For applications spanning the globe, web mercator is a common projection as it minimizes distortion for the majority of the inhabited planet. However, if you're focused on relative distance from a particular point, a Gnomonic projection might be a better choice.
+For applications spanning the globe, web mercator is a common projection that minimizes distortion for the majority of the inhabited planet. However, if you're focused on relative distance from a particular point, a Gnomonic projection might be a better choice.
 
 <img of web merc> | <img of gnomic projection>
 
@@ -22,7 +22,7 @@ Our first group project(ion) will require some new dependencies.
 
 The [PROJ](https://proj.org) coordinate transformation software has been helping people solve geospatial problems since the late 1970's. In addition to its longevity, it also stands out for its accuracy and speed. The [proj crate](https://crates.io/crates/proj) wraps and extends PROJ to make it feel right at home in your Rust application.
 
-For its part, [well-known text](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry) (WKT) is a very (sigh) well-known way of representing geometry, and the [wkt crate](https://crates.io/crates/wkt) adds read and write support for WKT to Rust.
+For its part, [well-known text](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry) (WKT) is a very (sigh) well-known way of representing geometry as text, and the [wkt crate](https://crates.io/crates/wkt) adds read and write support for WKT to Rust.
 
 Finally, we'll be using the [geo crate](https://crates.io/crates/geo) (a collection of geometry types and algorithms) to do some analysis.
 
@@ -62,9 +62,9 @@ The [`Point`](https://docs.rs/geo/latest/geo/struct.Point.html) type, from the *
 
 However, ultimately you reap what you sow. Unintentionally clobbering some existing method definition that was defined in a third-party module can quickly make "fun things" feel decidedly less fun. For that reason, even when they are supported, people often try to avoid these kinds of language gymnastics.
 
-Rust tries to take an enlightened middle ground with its trait system. Rust supports adding shared functionality to existing types, but only in some *carefully* prescribed ways which avoid many of the problems with less-restrictive approaches. Rust's trait system is a core component of the language, and you can (and should!) read more about it in the [official documentation about traits](https://doc.rust-lang.org/book/ch10-02-traits.html).
+Rust tries to take an enlightened middle ground with its trait system. Rust supports adding shared functionality to existing types, but only in some *carefully* prescribed ways which avoid many of the problems with less-restrictive approaches. Rust's trait system is a core component of the language, and you can (and should!) read more about it in the [official documentation](https://doc.rust-lang.org/book/ch10-02-traits.html).
 
-The main takeaway for now is this: **In Rust, functionality is often defined in terms of traits** and in order to be effective you'll need to `use` both the traits and the types which implement those traits (in this case `use wkt::TryFromWkt` and `use geo::Point` respectively).
+The main takeaway for now is this: **In Rust, functionality is often defined in terms of traits** and in order to be effective you'll need to `use` both the *traits* and the *types* which implement those traits (in this case `use wkt::TryFromWkt` and `use geo::Point` respectively).
 
 ## Trait-or
 

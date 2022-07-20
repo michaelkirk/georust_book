@@ -14,7 +14,7 @@ Fortunately for us, we also have a list of every public water fountain that will
 
 ## Filtered Water
 
-We have two different data source — water fountains and parks. Solving spatial problems often involves finding ways to stir things up. Let's see how many of these water fountains are inside of parks:
+We have two different data sources — water fountains and parks. Solving spatial problems often involves finding ways to stir things up. Let's see how many of these water fountains are inside of parks:
 
 ```rust
 use geo::{GeometryCollection, MultiPoint};
@@ -35,7 +35,7 @@ assert_eq!(water_fountains_in_parks, 1234);
 
 ## Thirst for Knowledge
 
-Counting is simple, but oftentimes we will need to do something more complex like taking some attributes from one data source and combining those attributes with another data source based on their spatial relationship.
+Counting is simple, but oftentimes we will need to do something more complex like taking certain attributes from one data source and combining those attributes with another data source based on their spatial relationship.
 
 Let's look at some selected data from two data sources:
 
@@ -114,7 +114,7 @@ assert_eq!(first_venue.borough_name, todo!());
 
 ## Water, Cooler
 
-If Central Park is as mainstream as it gets, which open spaces are more like the avant-garde Vapor Wave Jazz that your hipster friends just can't get enough of these days? Let's augment our earlier code to filter out the mainstream (largest) parks, while still ensuring we'd be able to get a drink of New York's finest (water).
+If Central Park is as mainstream as it gets, which open spaces are more like the avant-garde Vapor Wave Jazz that your hipster friends just can't get enough of these days? Let's augment our earlier code to filter out the mainstream (largest) parks, while still ensuring we'll be able to get a drink of New York's finest (water).
 
 **Parks, with at least one water fountain, sorted by smallest area**
 
@@ -197,17 +197,6 @@ assert_eq!(largest_venue.area, todo!());
 
 ## Drowning in Data
 
-I don't know if you actually tried to run the code above. It works, but it's slower than necessary. So far we've been analyzing these data sets without any consideration for speed. We can sort of justify our laissez-faire approach to CPU usage for one-off calculations that won't take too much time to run either way, but optimization will become increasingly important as we begin to work with larger amounts of data. In particular, the way we're checking if each water fountain is in each park is pretty naive. We can do better!
+This code works, but it's slower than necessary. So far we've been analyzing data sets without any consideration for speed. We can sort of justify our laissez-faire approach to CPU usage for one-off calculations that won't take too much time to run either way, but optimization will become increasingly important as we begin to work with larger amounts of data. In particular, the way we're checking if each water fountain is in each park is pretty naive. We can do better!
 
 In the next section we'll explore some techniques to enhance the performance of some common geospatial operations. Quickly moving through the real world may require a jet engine, but that doesn't mean that your laptop needs to sound like one.
-
----
-
-## Draft Notes
-
-- Space jam. Jam/jelly (Michael is sure there's a joke here)
-
-Point in a polygon (point is contained).
-Polygon within polygon, versus polygon that touches the side of another.
-"If a property line crosses counties, should it be counted in both (or neither)."
-Contains, intersects, "is within"
