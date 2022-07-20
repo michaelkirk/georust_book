@@ -62,7 +62,7 @@ use wkt;
 
 let mut csv_reader = {
   use std::fs::File;
-  let file = File::open("philly_waterways.csv").expect("invalid file");
+  let file = File::open("philly_waterways.csv").expect("file path must be valid");
   csv::Reader::from_reader(file)
 };
 
@@ -71,24 +71,24 @@ let mut max_bridge_location = None;
 let mut bridge_count = 0;
 
 for row in csv_reader.records() {
-  let creek_segment = row.expect("unable to read row from CSV");
+  let creek_segment = row.expect("must be able to read row from CSV");
 
-  let creek_name = waterway_segment.get(0).expect("missing 'creek_name' field");
+  let creek_name = waterway_segment.get(0).expect("'creek_name' field must be present");
 
   if creek_name != "Wissahickon Creek" {
     continue;
   }
 
-  let infrastructure_label = waterway_segment.get(1).expect("missing 'inf1' field");
+  let infrastructure_label = waterway_segment.get(1).expect("'inf1' field must be present");
 
   if infrastructure_label != "Bridged" {
     continue;
   }
   bridge_count += 1;
 
-  let geometry_str = waterway_segment.get(2).expect("missing `geometry` field");
+  let geometry_str = waterway_segment.get(2).expect("`geometry` field must be present");
   use wkt::TryFromWkt;
-  let geometry = MultiPolygon::try_from_wkt_str(geometry_str).expect("invalid wkt");
+  let geometry = MultiPolygon::try_from_wkt_str(geometry_str).expect("wkt must be valid");
 
   let bridge_area = geometry.unsigned_area();
 
@@ -112,9 +112,9 @@ assert_eq!(max_bridge_location, Some(todo!()));
 That works, but we can simplify things a bit. One thing you may have noticed is the repetitive nature of `get`ting numbered fields from the CSV while `expect`ing no errors:
 
 ```rust,ignore
-let creek_name = waterway_segment.get(0).expect("missing 'creek_name' field");
-let infrastructure_label = waterway_segment.get(1).expect("missing 'inf1' field");
-let geometry = waterway_segment.get(2).expect("missing `geometry` field");
+let creek_name = waterway_segment.get(0).expect("'creek_name' field must be present");
+let infrastructure_label = waterway_segment.get(1).expect("'inf1' field must be present");
+let geometry = waterway_segment.get(2).expect("`geometry` field must be present");
 ```
 
 For each row in the CSV, getting fields by number in an ad-hoc fashion like this is simple, but it's a little loosey-goosey: We have to remember what order the fields are in and also write some boring error-checking boilerplate.
@@ -206,7 +206,7 @@ Let's see how we can use the above code to clean up our earlier implementation:
 #
 # let mut csv_reader = {
 #   use std::fs::File;
-#   let file = File::open("philly_waterways.csv").expect("invalid file");
+#   let file = File::open("philly_waterways.csv").expect("file path must be valid");
 #   csv::Reader::from_reader(file)
 # };
 #
@@ -246,7 +246,7 @@ for row in csv_reader::records<CreekSegment>() {
   // All of our error checking and field parsing can be replaced by a
   // single line. The rest is automatically inferred from our
   // serde-annotated struct declaration.
-  let creek_segment: CreekSegment = row.expect("invalid creek segment");
+  let creek_segment: CreekSegment = row.expect("creek segment must be valid");
 
   // At this point we know all the fields of creek_segment
   // have been populated.
@@ -362,7 +362,7 @@ use wkt;
 
 let mut geojson_feature_reader = {
   use std::fs::File;
-  let file = File::open("philly_waterways.geojson").expect("invalid file");
+  let file = File::open("philly_waterways.geojson").expect("file path must be valid");
   geojson::FeatureCollectionReader::from(file)
 };
 
@@ -401,7 +401,7 @@ for feature in geojson_feature_reader {
 
   // All of our error checking and field parsing is replaced by this
   // line, and inferred from our serde-annotated struct declaration.
-  let creek_segment: CreekSegment = feature.expect("invalid creek segment");
+  let creek_segment: CreekSegment = feature.expect("creek segment must be valid");
 
   // Thanks to the magic of serde, the rest of this example is exactly
   // the same as the serde CSV example!
