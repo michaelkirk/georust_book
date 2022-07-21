@@ -56,7 +56,7 @@ Let's use a computer to find the answers:
 
 ```rust
 use csv;
-use geo::algorithm::Area;
+use geo::algorithm::{Centroid, Area};
 use geo::geometry::MultiPolygon;
 use wkt;
 
@@ -73,35 +73,36 @@ let mut bridge_count = 0;
 for row in csv_reader.records() {
   let creek_segment = row.expect("must be able to read row from CSV");
 
-  let creek_name = waterway_segment.get(0).expect("'creek_name' field must be present");
+  let creek_name = creek_segment.get(0).expect("'creek_name' field must be present");
 
   if creek_name != "Wissahickon Creek" {
     continue;
   }
 
-  let infrastructure_label = waterway_segment.get(1).expect("'inf1' field must be present");
+  let infrastructure_label = creek_segment.get(1).expect("'inf1' field must be present");
 
   if infrastructure_label != "Bridged" {
     continue;
   }
   bridge_count += 1;
 
-  let geometry_str = waterway_segment.get(2).expect("`geometry` field must be present");
+  let geometry_str = creek_segment.get(2).expect("`geometry` field must be present");
   use wkt::TryFromWkt;
-  let geometry = MultiPolygon::try_from_wkt_str(geometry_str).expect("wkt must be valid");
+  // TODO: why is the explicit <f64> required? I'd think the default trait param would obviate it
+  let geometry = MultiPolygon::<f64>::try_from_wkt_str(geometry_str).expect("wkt must be valid");
 
   let bridge_area = geometry.unsigned_area();
 
   if let Some(ref mut previous_max) = max_bridge_area {
-      if bridge_area > previous_max {
+      if bridge_area > *previous_max {
         *previous_max = bridge_area;
-        max_bridge_location = Some(geometry.bounding_rect().center());
+        max_bridge_location = Some(geometry.centroid());
       }
   } else {
     // This is the first bridge - so by definition it's the
     // biggest one we've seen so far.
     max_bridge_area = Some(bridge_area);
-    max_bridge_location = Some(geometry.bounding_rect().center());
+    max_bridge_location = Some(geometry.centroid());
   }
 }
 
@@ -112,9 +113,9 @@ assert_eq!(max_bridge_location, Some(todo!()));
 That works, but we can simplify things a bit. One thing you may have noticed is the repetitive nature of `get`ting numbered fields from the CSV while `expect`ing no errors:
 
 ```rust,ignore
-let creek_name = waterway_segment.get(0).expect("'creek_name' field must be present");
-let infrastructure_label = waterway_segment.get(1).expect("'inf1' field must be present");
-let geometry = waterway_segment.get(2).expect("`geometry` field must be present");
+let creek_name = creek_segment.get(0).expect("'creek_name' field must be present");
+let infrastructure_label = creek_segment.get(1).expect("'inf1' field must be present");
+let geometry = creek_segment.get(2).expect("`geometry` field must be present");
 ```
 
 For each row in the CSV, getting fields by number in an ad-hoc fashion like this is simple, but it's a little loosey-goosey: We have to remember what order the fields are in and also write some boring error-checking boilerplate.
@@ -170,7 +171,6 @@ Finally, before we return to our example, a struct like this is also the perfect
 # struct CreekSegment {
 #   creek_name: String,
 #
-#
 #   #[serde(rename = "inf1" )]
 #   infrastructure_label: String,
 #
@@ -188,10 +188,9 @@ impl CreekSegment {
     self.geometry.unsigned_area()
   }
 
-  # TODO: Is this method being used anywhere, or can it be removed?
   fn centroid(&self) -> geo::Point {
-    use geo::algorithm::BoundingRect;
-    self.geometry.bounding_rect().center()
+    use geo::algorithm::Centroid;
+    self.geometry.centroid().expect("a centroid exists for any non-empty geometry")
   }
 }
 ```
@@ -236,15 +235,15 @@ Let's see how we can use the above code to clean up our earlier implementation:
 #   }
 #
 #   fn centroid(&self) -> geo::Point {
-#     use geo::algorithm::BoundingRect;
-#     self.geometry.bounding_rect().center()
+#     use geo::algorithm::Centroid;
+#     self.geometry.centroid().expect("a centroid exists for any non-empty geometry")
 #   }
 # }
 #
-for row in csv_reader::records<CreekSegment>() {
+for row in csv_reader.deserialize() {
 
-  // All of our error checking and field parsing can be replaced by a
-  // single line. The rest is automatically inferred from our
+  // All of our error checking and field parsing can be replaced by
+  // a single line. The rest is automatically inferred from our
   // serde-annotated struct declaration.
   let creek_segment: CreekSegment = row.expect("creek segment must be valid");
 
@@ -255,25 +254,26 @@ for row in csv_reader::records<CreekSegment>() {
     continue;
   }
 
-  // TODO: Call out that we're using the helper method.
+  // Extracting logic into helper methods like this allows for code reuse and
+  // can make the code easier to understand.
   if !creek_segment.is_bridge() {
     continue;
   }
   bridge_count += 1;
 
-  // TODO: Call out that we're using the helper method.
+  // Notice we're using another one of our helper methods here.
   let bridge_area = creek_segment.area();
 
   if let Some(ref mut previous_max) = max_bridge_area {
-      if bridge_area > previous_max {
-        *previous_max = bridge_area
-        max_bridge_location =  Some(creek_segment.center());
+      if bridge_area > *previous_max {
+        *previous_max = bridge_area;
+        max_bridge_location =  Some(creek_segment.centroid());
       }
   } else {
     // This is the first bridge - so by definition it's the
     // biggest one we've seen so far.
     max_bridge_area = Some(bridge_area);
-    max_bridge_location = Some(creek_segment.center());
+    max_bridge_location = Some(creek_segment.centroid());
   }
 }
 #
@@ -392,8 +392,8 @@ let mut geojson_feature_reader = {
 #   }
 #
 #   fn centroid(&self) -> geo::Point {
-#     use geo::algorithm::BoundingRect;
-#     self.geometry.bounding_rect().center()
+#     use geo::algorithm::Centroid;
+#     self.geometry.centroid().expect("a centroid exists for any non-empty geometry")
 #   }
 # }
 #
@@ -421,15 +421,15 @@ for feature in geojson_feature_reader {
 #   let bridge_area = creek_segment.area();
 #
 #   if let Some(ref mut previous_max) = max_bridge_area {
-#       if bridge_area > previous_max {
-#         *previous_max = bridge_area
-#         max_bridge_location =  Some(creek_segment.center());
+#       if bridge_area > *previous_max {
+#         *previous_max = bridge_area;
+#         max_bridge_location =  Some(creek_segment.centroid());
 #       }
 #   } else {
 #     // This is the first bridge - so by definition it's the
 #     // biggest one we've seen so far.
 #     max_bridge_area = Some(bridge_area);
-#     max_bridge_location = Some(creek_segment.center());
+#     max_bridge_location = Some(creek_segment.centroid());
 #   }
 # }
 #

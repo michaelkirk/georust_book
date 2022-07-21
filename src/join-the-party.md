@@ -20,6 +20,8 @@ We have two different data sources — water fountains and parks. Solving spatia
 use geo::{GeometryCollection, MultiPoint};
 use geojson::FromGeoJson;
 
+let parks_geojson = todo!("get geojson string");
+let water_fountains_geojson = todo!("get geojson string);
 let parks = GeometryCollection::from_geojson_str(&parks_geojson).unwrap();
 let water_fountains = MultiPoint::from_geojson_str(&water_fountains_geojson).unwrap();
 
@@ -67,27 +69,27 @@ In order to produce a list like this, we need to combine the park name from the 
 If you've worked with SQL before, you might be thinking that this sounds a bit like a [JOIN clause](https://en.wikipedia.org/wiki/Join_(SQL)), and you'll no doubt be delighted to know that this kind of operation is indeed referred to as a *spatial join*. If you've never worked with SQL before, don't worry, you have an even bigger reason to be delighted.
 
 ```rust
-use geo::types::{MultiPolygon, Point};
-use geo::algorithms::{Contains};
+use geo::geometry::{MultiPolygon, Point};
+use geo::algorithm::{Contains};
 use geojson::FromGeoJson;
 
 // First Input
 struct Park {
-  geometry: MultiPolygon<f64>,
+  geometry: MultiPolygon,
   name: String
 }
 let parks: Vec<Park> = Park::from_geojson("parks.geojson");
 
 // Second Input
 struct Borough {
-  geometry: MultiPolygon<f64>,
+  geometry: MultiPolygon,
   name: String
 }
 let boroughs: Vec<Borough> = Borough::from_geojson("borough.geojson");
 
 // Output
 struct PartyVenue {
-  park_geometry: MultiPolygon<f64>,
+  park_geometry: MultiPolygon,
   park_name: String,
   borough_name: String,
 }
@@ -101,7 +103,7 @@ for park in parks {
         park_name: park.name.clone(),
         park_geometry: park.geometry.clone(),
         borough_name: borough.name.clone(),
-      }
+      };
       party_venues.push(venue);
     }
   }
@@ -126,29 +128,29 @@ If Central Park is as mainstream as it gets, which open spaces are more like the
 | ...                          | ...       | ...       | ...      |
 
 ```rust
-use geo::types::{MultiPolygon, Point};
-use geo::algorithms::{Contains};
+use geo::geometry::{MultiPolygon, MultiPoint, Point};
+use geo::algorithm::{Area, Contains};
 use geojson::FromGeoJson;
 
 // First Input
 struct Park {
-  geometry: MultiPolygon<f64>,
+  geometry: MultiPolygon,
   name: String
 }
 let parks: Vec<Park> = Park::from_geojson("parks.geojson");
 
 // Second Input
 struct Borough {
-  geometry: MultiPolygon<f64>,
+  geometry: MultiPolygon,
   name: String
 }
 let boroughs: Vec<Borough> = Borough::from_geojson("borough.geojson");
 
 // Output
 struct PartyVenue {
-  park_geometry: MultiPolygon<f64>,
   park_name: String,
   borough_name: String,
+  park_geometry: MultiPolygon,
   water_fountain_count: usize,
   area: f64,
 }
@@ -160,27 +162,29 @@ for park in parks {
     if borough.geometry.contains(&park.geometry) {
       let venue = PartyVenue {
         park_name: park.name,
+        borough_name: borough.name.clone(),
         area: park.geometry.unsigned_area(),
         park_geometry: park.geometry,
-        borough_name: borough.name.clone(),
+        water_fountain_count: 0, // we'll populate this field next
       };
       party_venues.push(venue);
     }
   }
 }
 
+let water_fountains = MultiPoint::from_geojson("water_fountains.geojson").unwrap();
 for water_fountain in &water_fountains {
   for party_venue in &mut party_venues {
-    if party_venue.geometry.contains(&water_fountain.geometry) {
+    if party_venue.park_geometry.contains(&water_fountain.geometry) {
       party_venue.water_fountain_count += 1;
       break;
     }
   }
 }
 
-party_venues = party_venues.iter().filter(|venue| venue.water_fountain_count > 0).collect();
+party_venues = party_venues.into_iter().filter(|venue| venue.water_fountain_count > 0).collect();
 
-party_venues.sort_in_place(|venue_1, venue_2| venue_1.area.compare(venue_2.area));
+party_venues.sort_by(|venue_1, venue_2| venue_1.area.partial_cmp(&venue_2.area).unwrap());
 
 let tiniest_venue = party_venues[0];
 assert_eq!(tiniest_venue.park_name, todo!());
@@ -188,7 +192,7 @@ assert_eq!(tiniest_venue.borough_name, todo!());
 assert_eq!(tiniest_venue.water_fountain_count, todo!());
 assert_eq!(tiniest_venue.area, todo!());
 
-let largest_venue = party_venues[-1];
+let largest_venue = party_venues[party_venues.len() -1];
 assert_eq!(largest_venue.park_name, todo!());
 assert_eq!(largest_venue.borough_name, todo!());
 assert_eq!(largest_venue.water_fountain_count, todo!());
