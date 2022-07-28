@@ -2,7 +2,7 @@
 
 Just like any good argument, the best way to start spatial analysis is by projecting your points.
 
-Almost everyone agrees that the world is a three-dimensional (and slightly smooshed) sphere. However, many spatial algorithms operate under the rustic assumptions of two-dimensional [euclidean geometry](https://en.wikipedia.org/wiki/Euclidean_geometry). When your input is defined in terms of latitude and longitude, the first step is to flatten (or "project") it onto 2D space.
+Speaking of good arguments, *almost* everyone agrees at this point that the earth is a three-dimensional (and slightly smooshed) sphere. However, many spatial algorithms operate under the rustic assumptions of two-dimensional [euclidean geometry](https://en.wikipedia.org/wiki/Euclidean_geometry). When your input is defined in terms of latitude and longitude, the first step is to flatten (or "project") it onto 2D space.
 
 ## In-depth Perception
 
