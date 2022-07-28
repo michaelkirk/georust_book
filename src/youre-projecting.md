@@ -8,9 +8,19 @@ Almost everyone agrees that the world is a three-dimensional (and slightly smoos
 
 There are lots of ways to flatten a 3D thing into a 2D space, but this process inherently introduces some distortion (like an orange getting smashed in your backpack). Choosing the best possible "projection" for a given scenario is part of the art of being a geospatial analyst.
 
-For applications spanning the globe, web mercator is a common projection that minimizes distortion for the majority of the inhabited planet. However, if you're focused on relative distance from a particular point, a Gnomonic projection might be a better choice.
+<div class="side-by-side">
+  <div>
+    <img src="images/mercator-projection.jpg" alt="A map of the earth as projected to a rectangle with the Mercator projection." />
+    <center><strong>Mercator</strong></center>
+  </div>
 
-<img of web merc> | <img of gnomic projection>
+  <div>
+    <img src="images/gnomonic-projection.jpg" alt="A map of the northern hemisphere of earth centered on the North Pole, projected to a circle with a gnomonic projection" />
+    <center><strong>Gnomonic</strong></center>
+  </div>
+</div>
+
+For applications spanning the globe, [the mercator projection](https://en.wikipedia.org/wiki/Mercator_projection) is a common projection that minimizes distortion for most of the inhabited planet. However, if you're focused on relative distance from a particular point, a [gnomonic projection](https://en.wikipedia.org/wiki/Gnomonic_projection) might be a better choice.
 
 If your work is more local in nature, you can use a projection method that is finely tuned for high accuracy within a relatively small and specific geographic area like [Zone 5 in Southern California](https://www.conservation.ca.gov/cgs/rgm/state-plane-coordinate-system#zone5), but if you try to use that same projection for something in [New York](https://en.wikipedia.org/wiki/New_York_City) (or, *alas and alack*, [old York](https://en.wikipedia.org/wiki/York)) your results will be way off!
 

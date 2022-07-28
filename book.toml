@@ -5,5 +5,8 @@ multilingual = false
 src = "src"
 title = "Answering Geospatial Questions with Rust"
 
+[output.html]
+additional-css = ["assets/css/style.css"]
+
 [output.html.playground]
 runnable = false
