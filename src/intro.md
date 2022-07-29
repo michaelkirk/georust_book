@@ -1,9 +1,5 @@
 # Answering Geospatial Questions with Rust
 
-### Option 1
-Space is vast and ever-present. It's all around us everywhere, and it exists between everything we care about. As a result, everyone always has questions about distance. Where are we going? Why does that one person on the conference call always sit so far away from the camera? And perhaps the most enduring of all, the query that we've all been asking since we could barely speak: Are we there yet?
-
-### Option 2
 Luke Skywalker once said that space is the final frontier, like it's just some distant concept far, far away. Set your lightsaber to stun just for a second though, and you quickly realize that space is vast and ever-present — it's all around us and between everything everywhere. It's familiar, yet elusive. How big is it? What should we do with it? Are we there yet?
 
 ## What Is Geospatial Computation?
