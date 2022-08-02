@@ -28,9 +28,9 @@ dependencies = [
 
 [[package]]
 name = "approx"
-version = "0.4.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3f2a05fd1bd10b2527e20a2cd32d8873d115b8b39fe219ee25f42a8aca6ba278"
+checksum = "cab112f0a86d568ea0e627cc1d6be74a1e9cd55214684db5561995f6dad897c6"
 dependencies = [
  "num-traits",
 ]
@@ -195,6 +195,7 @@ dependencies = [
 name = "cookbook"
 version = "0.1.0"
 dependencies = [
+ "approx",
  "csv",
  "geo",
  "geojson",
@@ -323,6 +324,8 @@ dependencies = [
 [[package]]
 name = "geo"
 version = "0.22.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f0943f2fcf1e21429a6d3a9842308ee363a6d9018fda475c47c564156d44eef3"
 dependencies = [
  "float_next_after",
  "geo-types",
@@ -336,10 +339,13 @@ dependencies = [
 [[package]]
 name = "geo-types"
 version = "0.7.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d9805fbfcea97de816e6408e938603241879cc41eea3fba3f84f122f4f6f9c54"
 dependencies = [
  "approx",
  "num-traits",
  "rstar",
+ "serde",
 ]
 
 [[package]]
@@ -354,12 +360,10 @@ dependencies = [
 [[package]]
 name = "geojson"
 version = "0.23.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f3c1147be22f66284de4387c43e4abab872e525a528f4d0af4e4e0f231895ea4"
+source = "git+https://github.com/georust/geojson?branch=mkirk/serde#65fbb66adebdf2c7281805288d3bbf895d5097e6"
 dependencies = [
  "geo-types",
  "serde",
- "serde_derive",
  "serde_json",
  "thiserror",
 ]

@@ -60,9 +60,25 @@ Locations: the latitude and longitude of the concession.
 
 ## Philly Waterways
 
-Downloaded geojson from https://www.opendataphilly.org/dataset/hydrology
-converted to csv: geozero philly_waterways.geojson philly_waterways.csv
-Opened in spreadsheet app (Numbers.app): 
+Downloaded Hydrographic_Features_Poly.geojson from https://www.opendataphilly.org/dataset/hydrology
+converted to csv:
+
+    geozero source/Hydrographic_Features_Poly.geojson philly_waterways.csv
+
+*NOTE*: Be sure to get the "Poly" version, not the "Line" version of that file.
+
+*NOTE*: There is an existing .csv provided on that same page, but it lacks
+a geomtry column, hence why we download the geojson and convert it.
+
+Opened in spreadsheet app (Numbers.app):
   - deleted columns except: geometry, creek_name, and inf1
   - reordered geometry to be last column
   - lowercased remaining columns
+
+convert csv back to geojson (to get a geojson which has only our necessary columns)
+
+  geozero philly_waterways.csv --csv-geometry-column=geometry philly_waterways_unformatted.geojson
+
+  # format geojson
+  jq . < philly_waterways_unformatted.geojson > philly_waterways.geojson
+

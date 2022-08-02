@@ -18,7 +18,10 @@ wkt = { version = "0.10.3", features = ["serde"] }
 csv = { version = "1.1.6" }
 geojson = { version = "0.23.0" }
 serde = { version = "1.0.137", features = ["derive"] }
+approx = "0.5.1"
 
 [patch.crates-io]
-geo = { path = "../geo/geo" }
-geo-types = { path = "../geo/geo-types" }
+# geo = { path = "../geo/geo" }
+# geo-types = { path = "../geo/geo-types" }
+# geojson = { path = "../geojson" }
+geojson = { git = "https://github.com/georust/geojson", branch = "mkirk/serde" }

@@ -35,7 +35,7 @@ There are a lot of ways to store geospatial information. Recall that well-known 
 
 ![Zoomed in segment of a winding waterway, with one narrow segment highlighted](images/philly-bridge-selected.png)
 
-This [CSV of Philadelphia waterway segments](philly_waterways.csv) does just that. Here's an excerpt:
+This [CSV of Philadelphia waterway segments](data/philly_waterways/philly_waterways.csv) does just that. Here's an excerpt:
 
 | creek_name        | inf1    | geometry           |
 |-------------------|---------|--------------------|
@@ -57,12 +57,13 @@ Let's use a computer to find the answers:
 ```rust
 use csv;
 use geo::algorithm::{Centroid, Area};
-use geo::geometry::MultiPolygon;
+use geo::geometry::{Point, Geometry};
+use proj::Transform;
 use wkt;
 
 let mut csv_reader = {
   use std::fs::File;
-  let file = File::open("philly_waterways.csv").expect("file path must be valid");
+  let file = File::open("src/data/philly_waterways/philly_waterways.csv").expect("file path must be valid");
   csv::Reader::from_reader(file)
 };
 
@@ -89,25 +90,31 @@ for row in csv_reader.records() {
   let geometry_str = creek_segment.get(2).expect("`geometry` field must be present");
   use wkt::TryFromWkt;
   // TODO: why is the explicit <f64> required? I'd think the default trait param would obviate it
-  let geometry = MultiPolygon::<f64>::try_from_wkt_str(geometry_str).expect("wkt must be valid");
+  let geometry = Geometry::<f64>::try_from_wkt_str(geometry_str).expect("wkt must be valid");
 
-  let bridge_area = geometry.unsigned_area();
+  // Project from lat/lon to something we can get reasonable area calculations from.
+  // Review the previous article on projections for more on this topic.
+  //
+  // WGS84 - World Geodetic System, aka lat/lon
+  // EPSG:2272 - NAD83 / Pennsylvania South (ftUS)
+  let bridge_area = geometry.transformed_crs_to_crs("WGS84", "EPSG:2272").unwrap().unsigned_area();
 
   if let Some(ref mut previous_max) = max_bridge_area {
       if bridge_area > *previous_max {
         *previous_max = bridge_area;
-        max_bridge_location = Some(geometry.centroid());
+        max_bridge_location = Some(geometry.centroid().expect("a centroid exists for any non-empty geometry"));
       }
   } else {
     // This is the first bridge - so by definition it's the
     // biggest one we've seen so far.
     max_bridge_area = Some(bridge_area);
-    max_bridge_location = Some(geometry.centroid());
+    max_bridge_location = Some(geometry.centroid().expect("a centroid exists for any non-empty geometry"));
   }
 }
 
-assert_eq!(max_bridge_area, Some(todo!()));
-assert_eq!(max_bridge_location, Some(todo!()));
+assert_eq!(bridge_count, 62);
+approx::assert_relative_eq!(max_bridge_area.unwrap().round(), 8199.0);
+approx::assert_relative_eq!(max_bridge_location.unwrap(), Point::new(-75.22813045476391, 40.151799193616995));
 ```
 
 That works, but we can simplify things a bit. One thing you may have noticed is the repetitive nature of `get`ting numbered fields from the CSV while `expect`ing no errors:
@@ -134,7 +141,7 @@ This schema can be converted into a Rust struct like this:
 struct CreekSegment {
   creek_name: String,
   inf1: String,
-  geometry: geo::geometry::MultiPolygon
+  geometry: geo::geometry::Geometry
 }
 ```
 
@@ -157,10 +164,10 @@ struct CreekSegment {
 
   // serde has built-in support for common data types like numbers and strings,
   // and it also allows other crates (like `wkt`) to build custom deserializers
-  // so that we can create complex data types (like this `MultiPolygon`)
+  // so that we can create complex data types (like this `Geometry`)
   // directly from our input data.
   #[serde(deserialize_with = "wkt::deserialize_wkt")]
-  geometry: geo::geometry::MultiPolygon
+  geometry: geo::geometry::Geometry
 }
 ```
 
@@ -175,7 +182,7 @@ Finally, before we return to our example, a struct like this is also the perfect
 #   infrastructure_label: String,
 #
 #   #[serde(deserialize_with = "wkt::deserialize_wkt")]
-#   geometry: geo::geometry::MultiPolygon
+#   geometry: geo::geometry::Geometry
 # }
 #
 impl CreekSegment {
@@ -185,7 +192,14 @@ impl CreekSegment {
 
   fn area(&self) -> f64 {
     use geo::algorithm::Area;
-    self.geometry.unsigned_area()
+    use proj::Transform;
+
+    // Project from lat/lon to something we can get reasonable area calculations from.
+    // Review the previous article on projections for more on this topic.
+    //
+    // WGS84 - World Geodetic System, aka lat/lon
+    // EPSG:2272 - NAD83 / Pennsylvania South (ftUS)
+    self.geometry.transformed_crs_to_crs("WGS84", "EPSG:2272").unwrap().unsigned_area()
   }
 
   fn centroid(&self) -> geo::Point {
@@ -200,12 +214,12 @@ Let's see how we can use the above code to clean up our earlier implementation:
 ```rust
 # use csv;
 # use geo::algorithm::Area;
-# use geo::geometry::MultiPolygon;
+# use geo::geometry::{Point, Geometry};
 # use wkt;
 #
 # let mut csv_reader = {
 #   use std::fs::File;
-#   let file = File::open("philly_waterways.csv").expect("file path must be valid");
+#   let file = File::open("src/data/philly_waterways/philly_waterways.csv").expect("file path must be valid");
 #   csv::Reader::from_reader(file)
 # };
 #
@@ -221,7 +235,7 @@ Let's see how we can use the above code to clean up our earlier implementation:
 #   infrastructure_label: String,
 #
 #   #[serde(deserialize_with = "wkt::deserialize_wkt")]
-#   geometry: geo::geometry::MultiPolygon
+#   geometry: geo::geometry::Geometry
 # }
 #
 # impl CreekSegment {
@@ -231,7 +245,13 @@ Let's see how we can use the above code to clean up our earlier implementation:
 #
 #   fn area(&self) -> f64 {
 #     use geo::algorithm::Area;
-#     self.geometry.unsigned_area()
+#     use proj::Transform;
+#     // Project from lat/lon to something we can get reasonable area calculations from.
+#     // Review the previous article on projections for more on this topic.
+#     //
+#     // WGS84 - World Geodetic System, aka lat/lon
+#     // EPSG:2272 - NAD83 / Pennsylvania South (ftUS)
+#     self.geometry.transformed_crs_to_crs("WGS84", "EPSG:2272").unwrap().unsigned_area()
 #   }
 #
 #   fn centroid(&self) -> geo::Point {
@@ -240,12 +260,12 @@ Let's see how we can use the above code to clean up our earlier implementation:
 #   }
 # }
 #
-for row in csv_reader.deserialize() {
+for record in csv_reader.deserialize() {
 
   // All of our error checking and field parsing can be replaced by
   // a single line. The rest is automatically inferred from our
   // serde-annotated struct declaration.
-  let creek_segment: CreekSegment = row.expect("creek segment must be valid");
+  let creek_segment: CreekSegment = record.expect("creek segment must be valid");
 
   // At this point we know all the fields of creek_segment
   // have been populated.
@@ -267,7 +287,7 @@ for row in csv_reader.deserialize() {
   if let Some(ref mut previous_max) = max_bridge_area {
       if bridge_area > *previous_max {
         *previous_max = bridge_area;
-        max_bridge_location =  Some(creek_segment.centroid());
+        max_bridge_location = Some(creek_segment.centroid());
       }
   } else {
     // This is the first bridge - so by definition it's the
@@ -277,9 +297,9 @@ for row in csv_reader.deserialize() {
   }
 }
 #
-# assert_eq!(bridge_count, todo!());
-# assert_eq!(max_bridge_area, Some(todo!()));
-# assert_eq!(max_bridge_location, Some(todo!()));
+# assert_eq!(bridge_count, 62);
+# approx::assert_relative_eq!(max_bridge_area.unwrap().round(), 8199.0);
+# approx::assert_relative_eq!(max_bridge_location.unwrap(), Point::new(-75.22813045476391, 40.151799193616995));
 ```
 
 Using serde and structs like this is completely optional, but it can help keep your code tidy — especially as programs get more complex. If you prefer the ad-hoc style of the original example (e.g. accessing fields by number) and you don't care about adding any cute little helper methods, that's totally fine. Even if you aren't doing calculations on rivers, just go with the flow.
@@ -314,33 +334,33 @@ The lack of standardization means that whenever you encounter geographic data st
     {
       "type": "Feature",
       "geometry": {
-        "type": "MultiPolygon",
+        "type": "Polygon",
         "coordinates": [0, 1, 2, ...]
-      }
+      },
       "properties": {
-        "name": "Wissahickon Creek"
+        "name": "Wissahickon Creek",
         "inf1": "Bridged"
       }
     },
     {
       "type": "Feature",
       "geometry": {
-        "type": "MultiPolygon",
+        "type": "Polygon",
         "coordinates": [4, 5, 6, ...]
-      }
+      },
       "properties": {
-        "name": "Wissahickon Creek"
+        "name": "Wissahickon Creek",
         "inf1": ""
       }
     },
     {
       "type": "Feature",
       "geometry": {
-        "type": "MultiPolygon",
+        "type": "Polygon",
         "coordinates": [9, 10, 11, ...]
-      }
+      },
       "properties": {
-        "name": "Cobbs Creek"
+        "name": "Cobbs Creek",
         "inf1": ""
       }
     }
@@ -357,13 +377,13 @@ Let's run our Wissahickon calculations again, only this time using information s
 ```rust
 use geojson;
 use geo::algorithm::Area;
-use geo::geometry::MultiPolygon;
+use geo::geometry::{Point, Geometry};
 use wkt;
 
 let mut geojson_feature_reader = {
   use std::fs::File;
-  let file = File::open("philly_waterways.geojson").expect("file path must be valid");
-  geojson::FeatureCollectionReader::from(file)
+  let file = File::open("src/data/philly_waterways/philly_waterways.geojson").expect("file path must be valid");
+  geojson::FeatureReader::from_reader(file)
 };
 
 # let mut max_bridge_area = None;
@@ -373,12 +393,11 @@ let mut geojson_feature_reader = {
 # struct CreekSegment {
 #   creek_name: String,
 #
-#
 #   #[serde(rename = "inf1" )]
 #   infrastructure_label: String,
 #
-#   #[serde(deserialize_with = "wkt::deserialize_wkt")]
-#   geometry: geo::geometry::MultiPolygon
+#   #[serde(deserialize_with = "geojson::deserialize_geometry")]
+#   geometry: geo::geometry::Geometry
 # }
 #
 # impl CreekSegment {
@@ -388,7 +407,13 @@ let mut geojson_feature_reader = {
 #
 #   fn area(&self) -> f64 {
 #     use geo::algorithm::Area;
-#     self.geometry.unsigned_area()
+#     use proj::Transform;
+#     // Project from lat/lon to something we can get reasonable area calculations from.
+#     // Review the previous article on projections for more on this topic.
+#     //
+#     // WGS84 - World Geodetic System, aka lat/lon
+#     // EPSG:2272 - NAD83 / Pennsylvania South (ftUS)
+#     self.geometry.transformed_crs_to_crs("WGS84", "EPSG:2272").unwrap().unsigned_area()
 #   }
 #
 #   fn centroid(&self) -> geo::Point {
@@ -397,17 +422,22 @@ let mut geojson_feature_reader = {
 #   }
 # }
 #
-for feature in geojson_feature_reader {
 
-  // All of our error checking and field parsing is replaced by this
-  // line, and inferred from our serde-annotated struct declaration.
-  let creek_segment: CreekSegment = feature.expect("creek segment must be valid");
+for record in geojson_feature_reader.deserialize().expect("valid feature collection") {
 
   // Thanks to the magic of serde, the rest of this example is exactly
-  // the same as the serde CSV example!
+  // the same as the serde CSV example above!
+  //
+  // We've hidden it for brevity, but you can see the rest of the code if you click
+  // the "eyeball" icon in the top right corner of this code block.
 
-#  // At this point we know all the fields of creek_segment
-#  // have been populated.
+#   // All of our error checking and field parsing is replaced by this
+#   // line, and inferred from our serde-annotated struct declaration.
+#   let creek_segment: CreekSegment = record.expect("creek segment must be valid");
+#
+#
+#   // At this point we know all the fields of creek_segment
+#   // have been populated.
 #
 #   if creek_segment.creek_name != "Wissahickon Creek" {
 #     continue;
@@ -431,11 +461,11 @@ for feature in geojson_feature_reader {
 #     max_bridge_area = Some(bridge_area);
 #     max_bridge_location = Some(creek_segment.centroid());
 #   }
-# }
-#
-# assert_eq!(bridge_count, todo!());
-# assert_eq!(max_bridge_area, Some(todo!()));
-# assert_eq!(max_bridge_location, Some(todo!()));
+}
+
+assert_eq!(bridge_count, 62);
+approx::assert_relative_eq!(max_bridge_area.unwrap().round(), 8199.0);
+approx::assert_relative_eq!(max_bridge_location.unwrap(), Point::new(-75.22813045476391, 40.151799193616995));
 ```
 
 ## Straying from the Format
