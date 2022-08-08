@@ -184,7 +184,7 @@ The excellent [`serde`](https://serde.rs) crate is a framework for **ser**ializi
 struct CreekSegment {
   creek_name: String,
 
-  // serde offers some customiziations so that we can use sensible
+  // serde offers some customizations so that we can use sensible
   // names in our code without having to modify our source data, whose
   // names we might not control.
   #[serde(rename = "inf1" )]
