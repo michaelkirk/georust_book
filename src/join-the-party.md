@@ -23,42 +23,41 @@ We have these two different data sources — drinking fountains and parks. Solvi
 use geojson::de::deserialize_feature_collection;
 use geo::algorithm::Contains;
 
+// a simple helper to open a file reader
 fn reader(filename: &str) -> std::io::BufReader<std::fs::File> {
   let path = format!("src/data/nyc/{filename}");
-  std::io::BufReader::new(std::fs::File::open(path).expect("parks file path must be valid"))
+  std::io::BufReader::new(std::fs::File::open(path).expect("file path must be valid"))
 }
 
-let parks: Vec<geo::MultiPolygon> = {
-  deserialize_feature_collection(reader("parks.geojson"))
+let parks: Vec<geo::MultiPolygon> = deserialize_feature_collection(reader("parks.geojson"))
     .expect("valid FeatureCollection")
     .map(|park_result: geojson::Result<geojson::Feature>| {
       let park_feature = park_result.expect("valid feature");
       geo::MultiPolygon::try_from(park_feature).expect("valid conversion")
     })
-    .collect()
-};
+    .collect();
 
-let drinking_fountain_points: Vec<geo::Point> = deserialize_feature_collection(reader("drinking_fountains.geojson"))
+let fountains: Vec<geo::Point> = deserialize_feature_collection(reader("drinking_fountains.geojson"))
     .expect("is a FeatureCollection")
     .map(|feature_result: geojson::Result<geojson::Feature>| {
       let feature = feature_result.expect("valid Feature");
       geo::Point::try_from(feature).expect("valid conversion")
     }).collect();
 
-let mut parks_with_drinking_fountains = 0;
+let mut parks_with_fountains = 0;
 for park in &parks {
-  for drinking_dountain_point in &drinking_fountain_points {
-    if park.contains(drinking_dountain_point) {
-      parks_with_drinking_fountains += 1;
+  for fountain in &fountains {
+    if park.contains(fountain) {
+      parks_with_fountains += 1;
       break;
     }
   }
 }
 
-assert_eq!(parks_with_drinking_fountains, 902);
+assert_eq!(parks_with_fountains, 902);
 
-let parks_without_drinking_fountains = parks.len() - parks_with_drinking_fountains;
-assert_eq!(parks_without_drinking_fountains, 1127);
+let parks_without_fountains = parks.len() - parks_with_fountains;
+assert_eq!(parks_without_fountains, 1127);
 ```
 
 A little less than half of NYC's parks have drinking fountains. Good to know!
@@ -100,18 +99,18 @@ If you've worked with SQL before, you might be thinking that this sounds a bit l
 Let's start to build a list of venues by combining each park with the name of the borough the park is in.
 
 ```rust
-use geo::geometry::{MultiPolygon, Point};
-use geo::algorithm::Contains;
-
-use geojson::de::{deserialize_feature_collection_to_vec, deserialize_geometry};
-
+# use geo::geometry::{MultiPolygon, Point};
+# use geo::algorithm::Intersects;
+#
+# use geojson::de::{deserialize_feature_collection_to_vec, deserialize_geometry};
+#
 # fn reader(filename: &str) -> std::io::BufReader<std::fs::File> {
 #   let path = format!("src/data/nyc/{filename}");
-#   std::io::BufReader::new(std::fs::File::open(path).expect("parks file path must be valid"))
+#   std::io::BufReader::new(std::fs::File::open(path).expect("file path must be valid"))
 # }
 
-// Using what we learned in the previous lesson, we'll
-// deserialize the input GeoJSON into a structs.
+// Using what we learned in the previous lesson on Features, we'll
+// deserialize the input GeoJSON into structs using serde.
 
 // First Input
 #[derive(serde::Deserialize)]
