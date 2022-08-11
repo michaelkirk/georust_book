@@ -142,7 +142,7 @@ struct PartyVenue {
   borough_name: String,
 }
 
-let mut venues: Vec<PartyVenue> = parks.into_iter().map(|park| {
+let mut venues: Vec<PartyVenue> = parks.iter().map(|park| {
   for borough in &boroughs {
     if borough.geometry.intersects(&park.geometry) {
       return PartyVenue {
@@ -217,7 +217,7 @@ struct PartyVenue {
   fountains: usize,
 }
 
-let mut venues: Vec<PartyVenue> = parks.map(|park| {
+let mut venues: Vec<PartyVenue> = parks.iter().map(|park| {
   for borough in &boroughs {
     if borough.geometry.intersects(&park.geometry) {
       use proj::Transform;
@@ -237,9 +237,9 @@ let mut venues: Vec<PartyVenue> = parks.map(|park| {
         square_meters,
         fountains: 0, // we'll populate this field later
       };
-      break;
     }
   }
+  panic!("park did not intersect with any borough");
 }).collect();
 
 let fountains: Vec<geo::Point> = deserialize_feature_collection(reader("drinking_fountains.geojson"))
