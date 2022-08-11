@@ -1,8 +1,8 @@
 # Join the Party
 
-Imagine living in New York City. Good pizza, Broadway, and one of the country's best collections of [open data](https://data.ny.gov/) have never felt closer to home. What really makes a city though, are the people who live there. Think about the people who help fill the blank spaces in your life. The shape of each relationship is usually a little different, but it's almost always possible to find some common ground. In this New York City life of our imagination, let's imagine some of the [Friends](https://en.wikipedia.org/wiki/Friends) we'd like to spend our time with, and start to think about where we could all hang out.
+Imagine living in New York City. Good pizza, Broadway, and one of the US's best collections of [open data](https://data.ny.gov/) have never felt closer to home. Other than pizza, what really makes a city great though, are the people who live there. Think about the people who help fill the blank spaces in your life. The shape of each relationship is usually a little different, but it's almost always possible to find some common ground. In this New York City life of our imagination, let's imagine some of the [Friends](https://en.wikipedia.org/wiki/Friends) we'd like to spend time with, and start to think about where we could all hang out.
 
-![Scene from Friends, with everyone inside the crowded Central Perk cafe](images/nyc-friends.jpg)
+![A scene from the Friends television show, with everyone inside the crowded Central Perk cafe](images/nyc-friends.jpg)
 <span class="photo-credit">Courtesy NBC</span>
 
 ## Drink from the Firehose
@@ -20,7 +20,7 @@ Fortunately for us, we also have a list of every public drinking fountain that w
 We have these two different data sources — drinking fountains and parks. Solving spatial problems often involves finding ways to stir things up. Let's see how many of these parks contain at least one of these drinking fountains.
 
 ```rust
-use geojson::de::deserialize_feature_collection;
+use geojson::de::deserialize_features_from_feature_collection;
 use geo::algorithm::Contains;
 
 // a simple helper to open a file reader
@@ -29,16 +29,15 @@ fn reader(filename: &str) -> std::io::BufReader<std::fs::File> {
   std::io::BufReader::new(std::fs::File::open(path).expect("file path must be valid"))
 }
 
-let parks: Vec<geo::MultiPolygon> = deserialize_feature_collection(reader("parks.geojson"))
-    .expect("valid FeatureCollection")
+let parks: Vec<geo::MultiPolygon> = deserialize_features_from_feature_collection(reader("parks.geojson"))
     .map(|park_result: geojson::Result<geojson::Feature>| {
+      // FIXME: Failing here
       let park_feature = park_result.expect("valid feature");
       geo::MultiPolygon::try_from(park_feature).expect("valid conversion")
     })
     .collect();
 
-let fountains: Vec<geo::Point> = deserialize_feature_collection(reader("drinking_fountains.geojson"))
-    .expect("is a FeatureCollection")
+let fountains: Vec<geo::Point> = deserialize_features_from_feature_collection(reader("drinking_fountains.geojson"))
     .map(|feature_result: geojson::Result<geojson::Feature>| {
       let feature = feature_result.expect("valid Feature");
       geo::Point::try_from(feature).expect("valid conversion")
