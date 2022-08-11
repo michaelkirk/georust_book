@@ -17,31 +17,30 @@ Fortunately for us, we also have a list of every public drinking fountain that w
 We have two different data sources — drinking fountains and parks. Solving spatial problems often involves finding ways to stir things up. Let's see how many of these drinking fountains are inside of parks:
 
 ```rust
-use geojson::FeatureReader;
+use geojson::de::deserialize_feature_collection;
 use geo::algorithm::Contains;
 
-use std::fs::File;
-use std::io::BufReader;
+fn reader(filename: &str) -> std::io::BufReader<std::fs::File> {
+  let path = format!("src/data/nyc/{filename}");
+  std::io::BufReader::new(std::fs::File::open(path).expect("parks file path must be valid"))
+}
 
 let parks: Vec<geo::MultiPolygon> = {
-  let parks_geojson = BufReader::new(File::open("src/data/nyc/parks.geojson").expect("parks file path must be valid"));
-  let parks_reader = FeatureReader::from_reader(parks_geojson);
-
-  parks_reader.features().map(|park_result: geojson::Result<geojson::Feature>| {
-    let park_feature = park_result.expect("valid feature");
-    geo::MultiPolygon::try_from(park_feature).expect("valid conversion")
-  }).collect()
+  deserialize_feature_collection(reader("parks.geojson"))
+    .expect("valid FeatureCollection")
+    .map(|park_result: geojson::Result<geojson::Feature>| {
+      let park_feature = park_result.expect("valid feature");
+      geo::MultiPolygon::try_from(park_feature).expect("valid conversion")
+    })
+    .collect()
 };
 
-let drinking_fountain_points: Vec<geo::Point> = {
-  let drinking_fountains_geojson = BufReader::new(File::open("src/data/nyc/drinking_fountains.geojson").expect("drinking fountains file path must be valid"));
-  let drinking_fountains_reader = FeatureReader::from_reader(drinking_fountains_geojson);
-
-  drinking_fountains_reader.features().map(|drinking_fountain_result: geojson::Result<geojson::Feature>| {
-    let drinking_fountain_feature = drinking_fountain_result.expect("valid feature");
-    geo::Point::try_from(drinking_fountain_feature).expect("valid conversion")
-  }).collect()
-};
+let drinking_fountain_points: Vec<geo::Point> = deserialize_feature_collection(reader("drinking_fountains.geojson"))
+    .expect("is a FeatureCollection")
+    .map(|feature_result: geojson::Result<geojson::Feature>| {
+      let feature = feature_result.expect("valid Feature");
+      geo::Point::try_from(feature).expect("valid conversion")
+    }).collect();
 
 let mut parks_with_drinking_fountains = 0;
 for park in &parks {
@@ -101,10 +100,12 @@ Let's start to build of a list of venues by combining a park with the name of th
 use geo::geometry::{MultiPolygon, Point};
 use geo::algorithm::Contains;
 
-use geojson::FeatureReader;
+use geojson::de::{deserialize_feature_collection_to_vec, deserialize_geometry};
 
-use std::fs::File;
-use std::io::BufReader;
+# fn reader(filename: &str) -> std::io::BufReader<std::fs::File> {
+#   let path = format!("src/data/nyc/{filename}");
+#   std::io::BufReader::new(std::fs::File::open(path).expect("parks file path must be valid"))
+# }
 
 // Using what we learned in the previous lesson, we'll
 // deserialize the input GeoJSON into a structs.
@@ -112,36 +113,26 @@ use std::io::BufReader;
 // First Input
 #[derive(serde::Deserialize)]
 struct Park {
-  #[serde(deserialize_with="geojson::deserialize_geometry")]
+  #[serde(deserialize_with="deserialize_geometry")]
   geometry: geo::MultiPolygon,
 
   #[serde(rename="signname")]
   name: String
 }
 
-let parks: Vec<Park> = {
-  let parks_geojson = BufReader::new(File::open("src/data/nyc/parks.geojson").expect("parks file path must be valid"));
-  let parks_reader = FeatureReader::from_reader(parks_geojson);
-  parks_reader.deserialize::<Park>().expect("valid FeatureCollection").collect::<geojson::Result<Vec<_>>>().unwrap()
-};
+let parks = deserialize_feature_collection_to_vec::<_, Park>(reader("parks.geojson")).expect("valid geojson");
 
 // Second Input
 #[derive(serde::Deserialize)]
 struct Borough {
-  #[serde(deserialize_with="geojson::deserialize_geometry")]
+  #[serde(deserialize_with="deserialize_geometry")]
   geometry: geo::MultiPolygon,
 
   #[serde(rename="boro_name")]
   name: String
 }
 
-let boroughs: Vec<Borough> = {
-  let boroughs_geojson = BufReader::new(File::open("src/data/nyc/boroughs.geojson").expect("borough file path must be valid"));
-  let boroughs_reader = FeatureReader::from_reader(boroughs_geojson);
-
-  // TODO: maybe introduce a geojson::deserialize_iter(boroughs_reader)
-  boroughs_reader.deserialize::<Borough>().expect("valid FeatureCollection").collect::<geojson::Result<Vec<_>>>().unwrap()
-};
+let boroughs = deserialize_feature_collection_to_vec::<_, Borough>(reader("boroughs.geojson")).expect("valid geojson");
 
 // Output
 struct PartyVenue {
@@ -187,41 +178,34 @@ If Central Park is as mainstream as it gets, which open spaces are more like the
 use geo::geometry::{MultiPolygon, MultiPoint, Point};
 use geo::algorithm::{Area, Contains};
 
-use geojson::FeatureReader;
+use geojson::de::{deserialize_feature_collection_to_vec, deserialize_feature_collection, deserialize_geometry};
 
-use std::fs::File;
-use std::io::BufReader;
+# fn reader(filename: &str) -> std::io::BufReader<std::fs::File> {
+#   let path = format!("src/data/nyc/{filename}");
+#   std::io::BufReader::new(std::fs::File::open(path).expect("parks file path must be valid"))
+# }
 
 // First Input
 #[derive(serde::Deserialize)]
 struct Park {
-  #[serde(deserialize_with="geojson::deserialize_geometry")]
+  #[serde(deserialize_with="deserialize_geometry")]
   geometry: geo::MultiPolygon,
 
   #[serde(rename="signname")]
   name: String
 }
-let parks: Vec<Park> = {
-  let parks_geojson = BufReader::new(File::open("src/data/nyc/parks.geojson").expect("parks file path must be valid"));
-  let parks_reader = FeatureReader::from_reader(parks_geojson);
-  parks_reader.deserialize::<Park>().expect("valid FeatureCollection").collect::<geojson::Result<Vec<_>>>().unwrap()
-};
+let parks = deserialize_feature_collection_to_vec::<_, Park>(reader("parks.geojson")).expect("valid geojson");
 
 // Second Input
 #[derive(serde::Deserialize)]
 struct Borough {
-  #[serde(deserialize_with="geojson::deserialize_geometry")]
+  #[serde(deserialize_with="deserialize_geometry")]
   geometry: geo::MultiPolygon,
 
   #[serde(rename="boro_name")]
   name: String
 }
-
-let boroughs: Vec<Borough> = {
-  let boroughs_geojson = BufReader::new(File::open("src/data/nyc/boroughs.geojson").expect("borough file path must be valid"));
-  let boroughs_reader = FeatureReader::from_reader(boroughs_geojson);
-  boroughs_reader.deserialize::<Borough>().expect("valid FeatureCollection").collect::<geojson::Result<Vec<_>>>().unwrap()
-};
+let boroughs = deserialize_feature_collection_to_vec::<_, Borough>(reader("boroughs.geojson")).expect("valid geojson");
 
 // Output
 struct PartyVenue {
@@ -254,15 +238,12 @@ for park in &parks {
   }
 }
 
-let drinking_fountain_points: Vec<geo::Point> = {
-  let drinking_fountains_geojson = BufReader::new(File::open("src/data/nyc/drinking_fountains.geojson").expect("drinking fountains file path must be valid"));
-  let drinking_fountains_reader = FeatureReader::from_reader(drinking_fountains_geojson);
-
-  drinking_fountains_reader.features().map(|drinking_fountain_result| {
-    let drinking_fountain_feature = drinking_fountain_result.expect("valid feature");
-    geo::Point::try_from(drinking_fountain_feature).expect("valid conversion")
-  }).collect()
-};
+let drinking_fountain_points: Vec<geo::Point> = deserialize_feature_collection(reader("drinking_fountains.geojson"))
+    .expect("is a FeatureCollection")
+    .map(|feature_result: geojson::Result<geojson::Feature>| {
+      let feature = feature_result.expect("valid Feature");
+      geo::Point::try_from(feature).expect("valid conversion")
+    }).collect();
 
 for drinking_fountain_point in &drinking_fountain_points {
   for party_venue in &mut party_venues {
