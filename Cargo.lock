@@ -356,7 +356,6 @@ dependencies = [
 [[package]]
 name = "geojson"
 version = "0.23.0"
-source = "git+https://github.com/georust/geojson?branch=mkirk/serde#3b9a986bc2c2e189d3ca565c33da25cb257b0c47"
 dependencies = [
  "geo-types",
  "serde",

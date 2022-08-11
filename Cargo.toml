@@ -33,5 +33,5 @@ geo = { git = "https://github.com/georust/geo" }
 geo-types = { git = "https://github.com/georust/geo" }
 
 # Proposed geojson: custom structs with serde
-# geojson = { path = "../geojson" }
-geojson = { git = "https://github.com/georust/geojson", branch = "mkirk/serde" }
+geojson = { path = "../geojson" }
+# geojson = { git = "https://github.com/georust/geojson", branch = "mkirk/serde" }
