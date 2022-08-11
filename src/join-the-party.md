@@ -18,44 +18,38 @@ We have two different data sources — drinking fountains and parks. Solving spa
 
 ```rust
 use geojson::FeatureReader;
+use geo::algorithm::Contains;
 
 use std::fs::File;
 use std::io::BufReader;
 
-let parks: Vec<geo::Geometry> = {
+let parks: Vec<geo::MultiPolygon> = {
   let parks_geojson = BufReader::new(File::open("src/data/nyc/parks.geojson").expect("parks file path must be valid"));
   let parks_reader = FeatureReader::from_reader(parks_geojson);
 
   parks_reader.features().map(|park_result: geojson::Result<geojson::Feature>| {
     let park_feature = park_result.expect("valid feature");
-    geo::Geometry::<f64>::try_from(park_feature).expect("valid conversion")
+    geo::MultiPolygon::try_from(park_feature).expect("valid conversion")
   }).collect()
 };
 
-let drinking_fountains: Vec<geo::Geometry> = {
+let drinking_fountain_points: Vec<geo::Point> = {
   let drinking_fountains_geojson = BufReader::new(File::open("src/data/nyc/drinking_fountains.geojson").expect("drinking fountains file path must be valid"));
   let drinking_fountains_reader = FeatureReader::from_reader(drinking_fountains_geojson);
 
   drinking_fountains_reader.features().map(|drinking_fountain_result: geojson::Result<geojson::Feature>| {
     let drinking_fountain_feature = drinking_fountain_result.expect("valid feature");
-    geo::Geometry::<f64>::try_from(drinking_fountain_feature).expect("valid conversion")
+    geo::Point::try_from(drinking_fountain_feature).expect("valid conversion")
   }).collect()
-};
-
-let park_has_drinking_water = |park: &geo::Geometry| {
-  use geo::algorithm::Contains;
-  for drinking_fountain in &drinking_fountains {
-    if park.contains(drinking_fountain) {
-      return true
-    }
-  }
-  false
 };
 
 let mut parks_with_drinking_fountains = 0;
 for park in &parks {
-  if park_has_drinking_water(park) {
-    parks_with_drinking_fountains += 1;
+  for drinking_dountain_point in &drinking_fountain_points {
+    if park.contains(drinking_dountain_point) {
+      parks_with_drinking_fountains += 1;
+      break;
+    }
   }
 }
 
@@ -64,6 +58,8 @@ assert_eq!(parks_with_drinking_fountains, 902);
 let parks_without_drinking_fountains = parks.len() - parks_with_drinking_fountains;
 assert_eq!(parks_without_drinking_fountains, 1127);
 ```
+
+A little less than half of NYC's parks have drinking fountains. Good to know!
 
 ## Thirst for Knowledge
 
@@ -133,7 +129,7 @@ let parks: Vec<Park> = {
 #[derive(serde::Deserialize)]
 struct Borough {
   #[serde(deserialize_with="geojson::deserialize_geometry")]
-  geometry: geo::Geometry,
+  geometry: geo::MultiPolygon,
 
   #[serde(rename="boro_name")]
   name: String
@@ -215,7 +211,7 @@ let parks: Vec<Park> = {
 #[derive(serde::Deserialize)]
 struct Borough {
   #[serde(deserialize_with="geojson::deserialize_geometry")]
-  geometry: geo::Geometry,
+  geometry: geo::MultiPolygon,
 
   #[serde(rename="boro_name")]
   name: String
@@ -262,10 +258,9 @@ let drinking_fountain_points: Vec<geo::Point> = {
   let drinking_fountains_geojson = BufReader::new(File::open("src/data/nyc/drinking_fountains.geojson").expect("drinking fountains file path must be valid"));
   let drinking_fountains_reader = FeatureReader::from_reader(drinking_fountains_geojson);
 
-  drinking_fountains_reader.features().map(|drinking_fountain_result: geojson::Result<geojson::Feature>| {
+  drinking_fountains_reader.features().map(|drinking_fountain_result| {
     let drinking_fountain_feature = drinking_fountain_result.expect("valid feature");
-    let geometry = geo::Geometry::<f64>::try_from(drinking_fountain_feature).expect("valid conversion");
-    geo::Point::<f64>::try_from(geometry).expect("valid conversion")
+    geo::Point::try_from(drinking_fountain_feature).expect("valid conversion")
   }).collect()
 };
 
