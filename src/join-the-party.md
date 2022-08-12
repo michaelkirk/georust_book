@@ -7,7 +7,7 @@ Imagine living in New York City. Good pizza, Broadway, and one of the US's best 
 
 ## Drink from the Firehose
 
-That cafe looks way too crowded. Instead, let's embrace the great outdoors and start putting together a list of parks in the city. Somewhere in these shaded shapes, we can see the faint outline of a future party beginning to form:
+That cafe looks a bit stuffy and a bit dated. Instead, let's embrace the timeless joy of the great outdoors by putting together a list of parks in the city. Somewhere in these shaded shapes, we can see the faint outline of a party beginning to form:
 
 ![The 2029 parks of New York City](images/nyc-parks.png)
 
@@ -95,7 +95,7 @@ In order to produce a list like this, we need to combine the park name from the 
 
 If you've worked with SQL before, you might be thinking that this sounds a bit like a [JOIN clause](https://en.wikipedia.org/wiki/Join_(SQL)), and you'll no doubt be delighted to know that this kind of operation is indeed referred to as a *spatial join*. If you've never worked with SQL before, don't worry, you have an even bigger reason to be delighted.
 
-Let's start to build a list of venues by combining each park with the name of the borough the park is in.
+Let's start building a list of venues by combining each park with the name of the borough that the park is in.
 
 ```rust
 # use geo::geometry::{MultiPolygon, Point};
@@ -108,7 +108,7 @@ Let's start to build a list of venues by combining each park with the name of th
 #   std::io::BufReader::new(std::fs::File::open(path).expect("file path must be valid"))
 # }
 
-// Using what we learned in the previous lesson on Features, we'll
+// Using what we learned in the previous section on Features, we'll
 // deserialize the input GeoJSON into structs using serde.
 
 // First Input
@@ -121,7 +121,7 @@ struct Park {
   name: String
 }
 
-let parks = deserialize_feature_collection_to_vec::<_, Park>(reader("parks.geojson")).expect("valid geojson");
+let parks = deserialize_feature_collection_to_vec::<Park>(reader("parks.geojson")).expect("valid geojson");
 
 // Second Input
 #[derive(serde::Deserialize)]
@@ -133,7 +133,7 @@ struct Borough {
   name: String
 }
 
-let boroughs = deserialize_feature_collection_to_vec::<_, Borough>(reader("boroughs.geojson")).expect("valid geojson");
+let boroughs = deserialize_feature_collection_to_vec::<Borough>(reader("boroughs.geojson")).expect("valid geojson");
 
 // Output
 struct PartyVenue {
@@ -142,25 +142,31 @@ struct PartyVenue {
   borough_name: String,
 }
 
-let mut venues: Vec<PartyVenue> = parks.iter().map(|park| {
+let mut venues: Vec<PartyVenue> = Vec::new();
+
+for park in &parks {
   for borough in &boroughs {
     if borough.geometry.intersects(&park.geometry) {
-      return PartyVenue {
+      let venue = PartyVenue {
         park_name: park.name.clone(),
         park_geometry: park.geometry.clone(),
         borough_name: borough.name.clone(),
       };
+      venues.push(venue);
+      break;
     }
   }
-  panic!("park did not intersect with any borough");
-}).collect();
+}
 
 let first_venue = &venues[0];
 assert_eq!(first_venue.park_name, "Devoe Park");
 assert_eq!(first_venue.borough_name, "Bronx");
+
+// There's one phantom park in the data set that's outside of any borough boundaries — Wild!
+assert_eq!(venues.len(), parks.len() - 1);
 ```
 
-We've produced a list of parks, spatially joined to their borough name. But there are still so many options. How can we narrow it down?
+We've produced a list of parks spatially joined to their borough name, but it's a huge list of options. How can we refine this list to surface only the best places?
 
 ## Water, Cooler
 
@@ -179,7 +185,7 @@ We want to produce something like this:
 # use geo::geometry::{MultiPolygon, MultiPoint, Point};
 # use geo::algorithm::{Area, Contains, Intersects};
 #
-# use geojson::de::{deserialize_feature_collection_to_vec, deserialize_feature_collection, deserialize_geometry};
+# use geojson::de::{deserialize_feature_collection_to_vec, deserialize_feature_collection, deserialize_features_from_feature_collection, deserialize_geometry};
 #
 # fn reader(filename: &str) -> std::io::BufReader<std::fs::File> {
 #   let path = format!("src/data/nyc/{filename}");
@@ -187,7 +193,7 @@ We want to produce something like this:
 # }
 #
 # // First Input
-# #[derive(serde::Deserialize)]
+# #[derive(serde::Deserialize, Debug)]
 # struct Park {
 #   #[serde(deserialize_with="deserialize_geometry")]
 #   geometry: geo::MultiPolygon,
@@ -195,8 +201,8 @@ We want to produce something like this:
 #   #[serde(rename="signname")]
 #   name: String
 # }
-# let parks = deserialize_feature_collection_to_vec::<_, Park>(reader("parks.geojson")).expect("valid geojson");
-# 
+# let parks = deserialize_feature_collection_to_vec::<Park>(reader("parks.geojson")).expect("valid geojson");
+#
 # // Second Input
 # #[derive(serde::Deserialize)]
 # struct Borough {
@@ -206,7 +212,7 @@ We want to produce something like this:
 #   #[serde(rename="boro_name")]
 #   name: String
 # }
-# let boroughs = deserialize_feature_collection_to_vec::<_, Borough>(reader("boroughs.geojson")).expect("valid geojson");
+# let boroughs = deserialize_feature_collection_to_vec::<Borough>(reader("boroughs.geojson")).expect("valid geojson");
 #
 // Output
 struct PartyVenue {
@@ -217,12 +223,13 @@ struct PartyVenue {
   fountains: usize,
 }
 
-let mut venues: Vec<PartyVenue> = parks.iter().map(|park| {
+let mut venues: Vec<PartyVenue> = Vec::new();
+for park in &parks {
   for borough in &boroughs {
     if borough.geometry.intersects(&park.geometry) {
       use proj::Transform;
       // Project the geometry in order to calculate a useful area.
-      // See our first lesson for more on projections.
+      // See our first section for more on projections.
       //
       // EPSG:32115 - New York Eastern (meters)
       let square_meters = park.geometry
@@ -230,20 +237,20 @@ let mut venues: Vec<PartyVenue> = parks.iter().map(|park| {
         .expect("valid projection")
         .unsigned_area();
 
-      return PartyVenue {
+      let venue = PartyVenue {
         park: park.name.clone(),
         borough: borough.name.clone(),
         geometry: park.geometry.clone(),
         square_meters,
         fountains: 0, // we'll populate this field later
       };
+      venues.push(venue);
+      break;
     }
   }
-  panic!("park did not intersect with any borough");
-}).collect();
+}
 
-let fountains: Vec<geo::Point> = deserialize_feature_collection(reader("drinking_fountains.geojson"))
-    .expect("is a FeatureCollection")
+let fountains: Vec<geo::Point> = deserialize_features_from_feature_collection(reader("drinking_fountains.geojson"))
     .map(|feature_result: geojson::Result<geojson::Feature>| {
       let feature = feature_result.expect("valid Feature");
       geo::Point::try_from(feature).expect("valid conversion")
@@ -271,18 +278,18 @@ approx::assert_relative_eq!(tiniest_venue.square_meters, 26.26352507495168);
 assert_eq!(tiniest_venue.fountains, 1);
 
 let largest_venue = venues.last().unwrap();
-assert_eq!(largest_venue.park, "Freshkills Park");
-assert_eq!(largest_venue.borough, "Staten Island");
+assert_eq!(largest_venue.park, "Pelham Bay Park");
+assert_eq!(largest_venue.borough, "Bronx");
 approx::assert_relative_eq!(largest_venue.square_meters, 3724056.9377815602);
 assert_eq!(largest_venue.fountains, 3);
 ```
 
-We have found some excellent candidates for a party. These off the beaten path spots will let us spend hours of quality time with our friends, all while staying hydrated. What more could you possibly ask for on a lazy day in New York City?
+We have found some excellent candidates for a party. These off the beaten path parks will let us spend hours of quality time with our friends, all while staying hydrated. What more could you possibly ask for on a lazy day in New York City?
 
 ## Drowning in Data
 
-One thing you could definitely ask for are quicker results. The code above works, but *my goodness* is it slow! Until now we've been brute forcing our solutions without much consideration for speed. We can sort of justify our laissez-faire approach to CPU usage for one-off calculations like this, but optimization will become increasingly important as we begin to work with larger amounts of data, longer processing pipelines, or if we need to recompute results frequently.
+One thing you could definitely ask for are quicker results. The code above works, but it's really quite slow! Until now we've basically brute forced our solutions without much consideration for speed. We can sort of justify our laissez-faire approach to CPU usage for one-off calculations like this, but speed will become increasingly important as our data sets grow larger and processing gets more complicated, or if results need to be recomputed more frequently.
 
-Generally speaking, Rust "is fast", but that's not the whole story. Let's say you're trying to get to [Harlem](https://en.wikipedia.org/wiki/Sugar_Hill,_Manhattan) in a hurry. If you're lucky, you could have been born [Tatyana McFadden](https://en.wikipedia.org/wiki/Tatyana_McFadden), five time winner and course record holder for the New York City Marathon women's weelchair division. Alternatively, you could just recall Duke Ellington and [take the A train](https://www.youtube.com/watch?v=1ggcQk67Mco&t=86s). In the same way, Rust's speedy physique, paired with a little strategy on how you approach your particular problem, will get you where you're going in record time.
+Generally speaking, Rust is "real fast", but that's not the whole story. Let's say you're trying to get to [Harlem](https://en.wikipedia.org/wiki/Sugar_Hill,_Manhattan) in a hurry. If you happen to be [Tatyana McFadden](https://en.wikipedia.org/wiki/Tatyana_McFadden), five time winner and course record holder for the New York City Marathon women's weelchair division, you'd do all right. Alternatively, you could just recall that Duke Ellington tune and [take the A train](https://www.youtube.com/watch?v=1ggcQk67Mco&t=86s). With Rust's speedy physique as a baseline, the application of some problem-specific know-how will get you where you're going in record time.
 
 In the next section we'll explore some of these tricks of the trade to speed up common geospatial operations. Quickly moving through the real world may require a jet engine, but that doesn't mean that your laptop needs to sound like one.

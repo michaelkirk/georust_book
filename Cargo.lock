@@ -192,19 +192,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cookbook"
-version = "0.1.0"
-dependencies = [
- "approx",
- "csv",
- "geo",
- "geojson",
- "proj",
- "serde",
- "wkt",
-]
-
-[[package]]
 name = "cortex-m"
 version = "0.7.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -361,6 +348,19 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror",
+]
+
+[[package]]
+name = "georust-book"
+version = "0.1.0"
+dependencies = [
+ "approx",
+ "csv",
+ "geo",
+ "geojson",
+ "proj",
+ "serde",
+ "wkt",
 ]
 
 [[package]]
