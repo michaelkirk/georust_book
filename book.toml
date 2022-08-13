@@ -7,6 +7,7 @@ title = "Answering Geospatial Questions with Rust"
 
 [output.html]
 additional-css = ["assets/css/style.css"]
+curly-quotes = true
 
 [output.html.playground]
 runnable = false
