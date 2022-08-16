@@ -158,6 +158,15 @@ struct CreekSegment {
 }
 ```
 
+<div class="callout rust-callout">
+
+### Structs in rust
+
+A struct is a type that holds multiple related values. You can read more in [The Rust Book](https://doc.rust-lang.org/book/ch05-01-defining-structs.html).
+
+</div>
+
+
 Notice how each field of the `CreekSegment` struct corresponds to a column in our CSV input. From here, we could write boilerplate code to populate each of these fields:
 ```rust,ignore
 let creek_name = creek_segment.get(0).expect("'creek_name' field must be present");
@@ -199,9 +208,13 @@ struct CreekSegment {
 }
 ```
 
-## A quick word on attributes
+<div class="callout rust-callout">
+
+## Attributes in Rust
 
 In the above Rust code, the `#[...]` bits are called _attributes_. The [official Rust documentation on attributes](https://doc.rust-lang.org/reference/attributes.html) is a little long in the tooth, but that's because attribute are really powerful and can be used for a lot of different things. At the risk of oversimplifying, attributes are just a way to give pieces of code extra behavior. In this case, by annotating our struct with `#[derive(serde::Deserialize)]`, we give our struct the ability to be built from a .csv file or other serde data sources. We then tweak the way that serde will build our struct with the serde-specific `#[serde(...)]` attributes.
+
+</div>
 
 ## Keeping it tidy
 
