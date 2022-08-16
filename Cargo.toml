@@ -1,5 +1,5 @@
 [package]
-name = "cookbook"
+name = "georust-book"
 version = "0.1.0"
 edition = "2021"
 
@@ -26,7 +26,12 @@ approx = "0.5.1"
 # Article 3 - spatial joins
 
 [patch.crates-io]
+# Unreleased geo/types: https://github.com/georust/geo/pull/880 contains 4 all
 # geo = { path = "../geo/geo" }
 # geo-types = { path = "../geo/geo-types" }
+geo = { git = "https://github.com/georust/geo" }
+geo-types = { git = "https://github.com/georust/geo" }
+
+# Proposed geojson: custom structs with serde
 # geojson = { path = "../geojson" }
-geojson = { git = "https://github.com/georust/geojson", branch = "mkirk/serde" }
+geojson = { git = "https://github.com/michaelkirk/rust-geojson", branch = "mkirk/article-3-dev" }

@@ -4,3 +4,8 @@
     grid-gap: 16px;
 }
 
+.photo-credit {
+    font-style: italic;
+    /* this is probably bad, but there are multiple themes in mdbook and I'm not sure how to concisely support them all */
+    opacity: 0.5;
+}
