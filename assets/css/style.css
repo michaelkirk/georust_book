@@ -1,3 +1,19 @@
+
+/**
+ * Typography
+ */
+html {
+    font-family: "Georgia";
+}
+
+/* Book Title */
+h1.menu-title {
+    font-family: "Open Sans";
+}
+
+/**
+ * Layout
+ */
 .side-by-side {
     display: grid;
     grid-template-columns: 1fr 1fr;
