@@ -64,9 +64,11 @@ assert_eq!(point.x(), -118.265429);
 assert_eq!(point.y(), 34.103175);
 ```
 
-#### Personality Traits
+<div class="callout rust-callout">
 
-Let's focus on this section of code from the example above: `Point::try_from_wkt_str`.
+### Personality Traits
+
+Let's focus on this bit of code from the example above: `Point::try_from_wkt_str`.
 
 The [`Point`](https://docs.rs/geo/latest/geo/struct.Point.html) type, from the **`geo`** crate, calls the [`try_from_wkt_str`](https://docs.rs/wkt/latest/wkt/trait.TryFromWkt.html) method, from the **`wkt`** crate. Depending on your personality and background, this kind of cross-library interaction may feel either completely horrifying or utterly unremarkable. Many languages, like C++ or Java, don't really support adding methods to existing types like this, but more dynamic languages, like Ruby or Python, let you easily do all kinds of fun things like replacing or adding methods at runtime.
 
@@ -75,6 +77,8 @@ However, ultimately you reap what you sow. Unintentionally clobbering some exist
 Rust tries to take an enlightened middle ground with its trait system. Rust supports adding shared functionality to existing types, but only in some *carefully* prescribed ways which avoid many of the problems with less-restrictive approaches. Rust's trait system is a core component of the language, and you can (and should!) read more about it in the [official documentation](https://doc.rust-lang.org/book/ch10-02-traits.html).
 
 The main takeaway for now is this: **In Rust, functionality is often defined in terms of traits** and in order to be effective you'll need to `use` both the *traits* and the *types* which implement those traits (in this case `use wkt::TryFromWkt` and `use geo::Point` respectively).
+
+</div>
 
 ## Trait-or
 
