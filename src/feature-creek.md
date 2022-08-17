@@ -586,7 +586,12 @@ approx::assert_relative_eq!(acceptable_walkabout_bridges[3].centroid(), Point::n
 
 ## Straying from the Format
 
-Ubiquity is arguably GeoJSON's biggest upside, but it's not the perfect format for everything. Like a truck on its way to fix a sinkhole (but then [falling into another sinkhole](https://twitter.com/orentalks/status/1070372166867320832) before it can get there), it's good to be aware of a few potential pitfalls in advance.
+Ubiquity is arguably GeoJSON's biggest upside, but it's not the perfect format for everything. 
+
+![Dump truck on the street, whose read wheel has fallen into a sinkhole](images/philly-sinkhole-dump-truck.jpg)
+<span class="photo-credit">Photo via [@orentalks](https://twitter.com/orentalks/status/1070372166867320832)</span>
+
+Like a truck on its way to fix a sinkhole (but then falling into another sinkhole before it can get there), it's good to be aware of a few potential pitfalls in advance.
 
 If you scroll up to the GeoJSON sample above, you may notice that the way it represents geometry is quite verbose. Unlike WKT, it's not as easy for humans to read at a glance, and compared to some other formats, it's not very efficient for computers to store or transmit. JSON editors exist, but they aren't nearly as powerful or widespread as spreadsheet programs that can easily read CSVs. GeoJSON also lacks a _spatial index_ (future topic!) so certain operations on complex geometries are slow.
 
