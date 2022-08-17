@@ -280,14 +280,14 @@ venues.sort_by(|venue_1, venue_2| venue_1.square_meters.partial_cmp(&venue_2.squ
 let tiniest_venue = venues.first().unwrap();
 assert_eq!(tiniest_venue.park, "Glendale Veterans Triangle");
 assert_eq!(tiniest_venue.borough, "Queens");
-approx::assert_relative_eq!(tiniest_venue.square_meters, 26.26352507495168);
+approx::assert_relative_eq!(tiniest_venue.square_meters, 26.263444242984757, epsilon = 1e-4);
 assert_eq!(tiniest_venue.fountains, 1);
 
 # let largest_venue = venues.last().unwrap();
 # assert_eq!(largest_venue.park, "Pelham Bay Park");
 # assert_eq!(largest_venue.borough, "Bronx");
-# approx::assert_relative_eq!(largest_venue.square_meters, 3724056.9377815602);
-# assert_eq!(largest_venue.fountains, 3);
+# approx::assert_relative_eq!(largest_venue.square_meters, 10835186.669072341);
+# assert_eq!(largest_venue.fountains, 43);
 ```
 
 We have found some excellent candidates for a party. These off the beaten path parks will let us spend hours of quality time with our friends, all while staying hydrated. What more could you possibly ask for on a lazy day in New York City?
