@@ -80,6 +80,8 @@ Let's look at some selected data from two data sources:
 
 **The five boroughs**
 
+![The five boroughs of New York City](images/nyc-boroughs.png)
+
 | borough_name | borough_shape                  |
 |--------------|--------------------------------|
 | Brooklyn     | `MULTIPOLYGON(((-73.86327...)` |
