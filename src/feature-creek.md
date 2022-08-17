@@ -410,38 +410,59 @@ This lack of standardization means that whenever you encounter geographic data s
   "features": [
     {
       "type": "Feature",
+      "properties": {
+        "creek_name": "Haines-Dittingers Creek",
+        "inf1": "Impoundment"
+      },
       "geometry": {
         "type": "Polygon",
-        "coordinates": [0, 1, 2, ...]
-      },
+        "coordinates": [
+          [
+            [
+              -75.2512163863237,
+              40.2171158853747
+            ],
+            [
+              -75.2512026232353,
+              40.217108225299
+            ],
+            [
+              -75.2511416958994,
+              40.2170817213073
+            ],
+            ...
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
       "properties": {
-        "name": "Wissahickon Creek",
+        "creek_name": "Wissahickon Creek",
         "inf1": "Bridged"
-      }
-    },
-    {
-      "type": "Feature",
+      },
       "geometry": {
         "type": "Polygon",
-        "coordinates": [4, 5, 6, ...]
-      },
-      "properties": {
-        "name": "Wissahickon Creek",
-        "inf1": ""
+        "coordinates": [
+          [
+            [
+              -75.25461361296729,
+              40.1820761530732
+            ],
+            [
+              -75.2545303055114,
+              40.1819601471794
+            ],
+            [
+              -75.25446431085831,
+              40.1820297432309
+            ],
+            ...
+          ]
+        ]
       }
     },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [9, 10, 11, ...]
-      },
-      "properties": {
-        "name": "Cobbs Creek",
-        "inf1": ""
-      }
-    }
-  ]
+    ...
 }
 ```
 
