@@ -47,27 +47,19 @@ header.codeblock-header {
 
 .callout h2:first-child,
 .callout h3:first-child {
-    /* margin-top effectively provided by background-image in :before */
+    /* margin-top effectively provided by background-image in :after */
     margin-top: 0;
 }
 
-.callout h1:first-child::before,
-.callout h2:first-child::before,
-.callout h3:first-child::before,
-.callout h4:first-child::before,
-.callout h5:first-child::before,
-.callout h6:first-child::before,
- /* override some default styles for :target */
-.callout h1:first-child:target::before,
-.callout h2:first-child:target::before,
-.callout h3:first-child:target::before,
-.callout h4:first-child:target::before,
-.callout h5:first-child:target::before,
-.callout h6:first-child:target::before {
+.callout h1:first-child::after,
+.callout h2:first-child::after,
+.callout h3:first-child::after,
+.callout h4:first-child::after,
+.callout h5:first-child::after,
+.callout h6:first-child::after {
     display: inline-block;
     content: "";
-    margin-left: 0;
-    margin-right: 8px;
+    margin-left: 8px;
 
     background-position: center bottom -5px;
     background-repeat: no-repeat;
@@ -80,12 +72,12 @@ header.codeblock-header {
     background-color: #FFDDDD;
 }
 
-.rust-callout h1:first-child::before,
-.rust-callout h2:first-child::before,
-.rust-callout h3:first-child::before,
-.rust-callout h4:first-child::before,
-.rust-callout h5:first-child::before,
-.rust-callout h6:first-child::before {
+.rust-callout h1:first-child::after,
+.rust-callout h2:first-child::after,
+.rust-callout h3:first-child::after,
+.rust-callout h4:first-child::after,
+.rust-callout h5:first-child::after,
+.rust-callout h6:first-child::after {
     background-image: url("../../images/ui/ferris.svg");
 }
 
