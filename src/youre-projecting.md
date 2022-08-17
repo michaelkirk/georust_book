@@ -138,7 +138,7 @@ Projecting a single point is simple enough. Let's try something a little more in
 
 People often say that the best way to learn is by making a mistake, so follow along as we do exactly that when calculating the area of this reservoir.
 
-<class="codeblock-header">Compute Area the Wrong Way</header>
+<header class="codeblock-header">Compute Area the Wrong Way</header>
 
 ```rust
 use geo::Polygon;
