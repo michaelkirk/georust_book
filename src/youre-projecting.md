@@ -54,6 +54,8 @@ This is the Ivanhoe reservoir in Los Angeles. Named after Sir Walter Scott's *Iv
 
 OK OK OK. We can use the `wkt` crate to create a `geo` geometry from the text representation of this point in the center of the water.
 
+<header class="codeblock-header">Parse WKT</header>
+
 ```rust
 use geo::Point;
 use wkt::TryFromWkt;
@@ -86,6 +88,8 @@ Another useful trait is the [`Transform`](https://docs.rs/proj/latest/proj/trait
 
 Let's betray latitude and longitude, technically known as [*The World Geodetic System*](https://en.wikipedia.org/wiki/World_Geodetic_System), and transform our point in the center of the Ivanhoe reservoir to the [California State Plane Coordinate System](https://www.conservation.ca.gov/cgs/rgm/state-plane-coordinate-system).
 
+<header class="codeblock-header">Transform a Point with PROJ</header>
+
 ```rust
 # use geo::Point;
 # use wkt::TryFromWkt;
@@ -104,6 +108,8 @@ assert_eq!(point.y(), 566939.9943794473);
 ```
 
 If we want to export or share our results, the `wkt` crate can serialize a point's in-memory representation back to well-known text.
+
+<header class="codeblock-header">Output WKT</header>
 
 ```rust
 # use geo::Point;
@@ -132,6 +138,8 @@ Projecting a single point is simple enough. Let's try something a little more in
 
 People often say that the best way to learn is by making a mistake, so follow along as we do exactly that when calculating the area of this reservoir.
 
+<class="codeblock-header">Compute Area the Wrong Way</header>
+
 ```rust
 use geo::Polygon;
 use wkt::TryFromWkt;
@@ -147,6 +155,8 @@ assert_eq!(polygon.unsigned_area(), 0.000002779367475015937);
 Ivanhoe reservoir is large enough to hold over 400,000 [shade balls](https://en.wikipedia.org/wiki/Shade_balls), so any area measurement that begins with `0.00000...` is highly suspect. Because our polygon was described in degrees (unprojected coordinates), the units of area we just computed are in "square degrees" which is not a very useful measurement. A degree near the North Pole is very different from a degree near the equator (and not just in terms of temperature).
 
 To get a reasonable result, we should first project the polygon to a euclidean coordinate reference system that is suitable for Los Angeles.
+
+<header class="codeblock-header">Compute Area the Right Way</header>
 
 ```rust
 # use geo::Polygon;

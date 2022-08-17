@@ -54,6 +54,8 @@ To make a handout for our "First Annual Wissahickon Walkabout," we want to inclu
 
 Let's combine a little attribute inspection with a little geometric processing to find the best bridges for our walk:
 
+<header class="codeblock-header">Process a CSV</header>
+
 ```rust
 use csv;
 use geo::algorithm::{Centroid, Area};
@@ -132,6 +134,8 @@ Eight bridges seems like the perfect number of crossings for an enthusiastic wal
 
 Just like the Thomas Mill bridge probably felt in 1938, our code could benefit from a good [deal](https://en.wikipedia.org/wiki/New_Deal) of tender loving care. One thing you may have noticed is the repetitive nature of `get`ting numbered fields from the CSV and then `expect`ing no errors:
 
+<header class="codeblock-header">Unfortunate Boilerplate</header>
+
 ```rust,ignore
 let creek_name = creek_segment.get(0).expect("'creek_name' field must be present");
 let infrastructure_label = creek_segment.get(1).expect("'inf1' field must be present");
@@ -149,6 +153,8 @@ Instead, we can parse each row into a rigidly defined `struct`. Let's take anoth
 | Wissahickon Creek | Bridged | MULTIPOLYGON(....) |
 
 This schema can be converted into a Rust struct like this:
+
+<header class="codeblock-header">A Row in the CSV as a Rust Struct</header>
 
 ```rust
 struct CreekSegment {
@@ -168,6 +174,9 @@ A struct is a type that holds multiple related values. You can read more in [The
 
 
 Notice how each field of the `CreekSegment` struct corresponds to a column in our CSV input. From here, we could write boilerplate code to populate each of these fields:
+
+<header class="codeblock-header">Revised, but Still Unfortunate, Boilerplate</header>
+
 ```rust,ignore
 let creek_name = creek_segment.get(0).expect("'creek_name' field must be present");
 let infrastructure_label = creek_segment.get(1).expect("'inf1' field must be present");
@@ -187,6 +196,8 @@ Deserializing information from a CSV file into a more ergonomic form like this i
 ## Serde, Slayer of Boilerplate
 
 The excellent [`serde`](https://serde.rs) crate is a framework for **ser**ializing and **de**serializing data across a variety of formats. We can use serde to annotate the above struct declaration, then build these structs from a CSV without all the verbose error checking and field assignment code.
+
+<header class="codeblock-header">Declarative Processing with Serde</header>
 
 ```rust
 #[derive(serde::Deserialize)]
@@ -219,6 +230,8 @@ In the above Rust code, the `#[...]` bits are called _attributes_. The [official
 ## Keeping it tidy
 
 Finally, before we return to our example, a struct like this is also the perfect place to hang some little helper methods:
+
+<header class="codeblock-header">Organizing Our Code with Struct Helper Methods</header>
 
 ```rust
 # #[derive(serde::Deserialize)]
@@ -263,6 +276,8 @@ impl CreekSegment {
 ```
 
 Let's see how we can use the above code to clean up our earlier implementation:
+
+<header class="codeblock-header">Processing a CSV with Serde</header>
 
 ```rust
 # use csv;
@@ -435,6 +450,8 @@ GeoJSON is pretty popular, especially for mapping and other geospatial applicati
 However, GeoJSON has long since left the domain of "web-only" formats, and now many other geospatial tools know how to handle it too: [QGIS](https://qgis.org), [GEOS](https://libgeos.org/), [JTS](https://locationtech.github.io/jts/), [GDAL](https://gdal.org/), and [Shapely](https://github.com/shapely/shapely) are all fluent in GeoJSON.
 
 Let's run our Wissahickon calculations again, only this time using information structured in GeoJSON format instead of a CSV. What's nice about using serde, is just how little of our code actually needs to change to support this completely different encoding:
+
+<header class="codeblock-header">Process GeoJSON with Serde</header>
 
 ```rust
 # use csv;

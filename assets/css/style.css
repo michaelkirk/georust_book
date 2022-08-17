@@ -23,6 +23,15 @@ h1.menu-title {
  * Components
  */
 
+header.codeblock-header {
+    font-weight: bold;
+    padding: 8px;
+    background: var(--table-header-bg);
+    margin-top: 32px;
+    /* egregious hack to "undo" the top-margin on the following code black */
+    margin-bottom: -16px;
+}
+
 .photo-credit {
     font-style: italic;
     /* this is probably bad, but there are multiple themes in mdbook and I'm not sure how to concisely support them all */
