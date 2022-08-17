@@ -19,6 +19,8 @@ Fortunately for us, we also have a list of every public drinking fountain that w
 
 We have these two different data sources — drinking fountains and parks. Solving spatial problems often involves finding ways to stir things up. Let's see how many of these parks contain at least one of these drinking fountains.
 
+<header class="codeblock-header">Count MultiPolygons That Contain at Least One Point</header>
+
 ```rust
 use geojson::de::deserialize_features_from_feature_collection;
 use geo::algorithm::Contains;
@@ -96,6 +98,8 @@ In order to produce a list like this, we need to combine the park name from the 
 If you've worked with SQL before, you might be thinking that this sounds a bit like a [JOIN clause](https://en.wikipedia.org/wiki/Join_(SQL)), and you'll no doubt be delighted to know that this kind of operation is indeed referred to as a *spatial join*. If you've never worked with SQL before, don't worry, you have an even bigger reason to be delighted.
 
 Let's start building a list of venues by combining each park with the name of the borough that the park is in.
+
+<header class="codeblock-header">Combining Attributes From Multiple Features</header>
 
 ```rust
 # use geo::geometry::{MultiPolygon, Point};
@@ -180,6 +184,8 @@ We want to produce something like this:
 | Polly Pocket Park            | Brooklyn  | 3         | 200           |
 | Honey I Shrunk the Esplanade | Bronx     | 1         | 300           |
 | ...                          | ...       | ...       | ...           |
+
+<header class="codeblock-header">Combining Attributes From Multiple Features and Filtering the Result</header>
 
 ```rust
 # use geo::geometry::{MultiPolygon, MultiPoint, Point};
