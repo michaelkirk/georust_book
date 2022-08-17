@@ -166,8 +166,8 @@ let first_venue = &venues[0];
 assert_eq!(first_venue.park_name, "Devoe Park");
 assert_eq!(first_venue.borough_name, "Bronx");
 
-// There's one phantom park in the data set that's outside of any borough boundaries — Wild!
-assert_eq!(venues.len(), parks.len() - 1);
+# // There's one phantom park in the data set that's outside of any borough boundaries — Wild!
+# assert_eq!(venues.len(), parks.len() - 1);
 ```
 
 We've produced a list of parks spatially joined to their borough name, but it's a huge list of options. How can we refine this list to surface only the best places?
@@ -283,11 +283,11 @@ assert_eq!(tiniest_venue.borough, "Queens");
 approx::assert_relative_eq!(tiniest_venue.square_meters, 26.26352507495168);
 assert_eq!(tiniest_venue.fountains, 1);
 
-let largest_venue = venues.last().unwrap();
-assert_eq!(largest_venue.park, "Pelham Bay Park");
-assert_eq!(largest_venue.borough, "Bronx");
-approx::assert_relative_eq!(largest_venue.square_meters, 3724056.9377815602);
-assert_eq!(largest_venue.fountains, 3);
+# let largest_venue = venues.last().unwrap();
+# assert_eq!(largest_venue.park, "Pelham Bay Park");
+# assert_eq!(largest_venue.borough, "Bronx");
+# approx::assert_relative_eq!(largest_venue.square_meters, 3724056.9377815602);
+# assert_eq!(largest_venue.fountains, 3);
 ```
 
 We have found some excellent candidates for a party. These off the beaten path parks will let us spend hours of quality time with our friends, all while staying hydrated. What more could you possibly ask for on a lazy day in New York City?

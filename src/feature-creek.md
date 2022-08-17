@@ -104,7 +104,7 @@ for row in feature_reader.records() {
     continue;
   }
 
-  // Calculate the size of the bridge
+  // Compute the size of the bridge
   let bridge_area = {
     // In the previous article about projections, we learned how to transform lat/lon to a local
     // projection to get useful area calculations.
