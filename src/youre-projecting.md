@@ -61,7 +61,7 @@ use geo::Point;
 use wkt::TryFromWkt;
 
 let wkt_string = "POINT(-118.265429 34.103175)";
-let mut point: Point<f64> = Point::try_from_wkt_str(wkt_string).unwrap();
+let mut point: Point = Point::try_from_wkt_str(wkt_string).unwrap();
 assert_eq!(point.x(), -118.265429);
 assert_eq!(point.y(), 34.103175);
 ```
@@ -95,7 +95,7 @@ Let's betray latitude and longitude, technically known as [*The World Geodetic S
 # use wkt::TryFromWkt;
 #
 # let wkt_string = "POINT(-118.265429 34.103175)";
-# let mut point: Point<f64> = Point::try_from_wkt_str(wkt_string).unwrap();
+# let mut point: Point = Point::try_from_wkt_str(wkt_string).unwrap();
 #
 use proj::Transform;
 
@@ -116,7 +116,7 @@ If we want to export or share our results, the `wkt` crate can serialize a point
 # use wkt::TryFromWkt;
 #
 # let wkt_string = "POINT(-118.265429 34.103175)";
-# let mut point: Point<f64> = Point::try_from_wkt_str(wkt_string).unwrap();
+# let mut point: Point = Point::try_from_wkt_str(wkt_string).unwrap();
 #
 # use proj::Transform;
 #
@@ -146,7 +146,7 @@ use wkt::TryFromWkt;
 use geo::algorithm::area::Area;
 
 let wkt_polygon = "POLYGON((-118.2662232 34.1038592,-118.2662339 34.1023485,-118.2639303 34.1023235,-118.2649125 34.1038878))";
-let mut polygon: Polygon<f64> = Polygon::try_from_wkt_str(wkt_polygon).unwrap();
+let mut polygon: Polygon = Polygon::try_from_wkt_str(wkt_polygon).unwrap();
 
 // 🤔 That's a suspiciously small number for so much water.
 assert_eq!(polygon.unsigned_area(), 0.000002779367475015937);
@@ -164,7 +164,7 @@ To get a reasonable result, we should first project the polygon to a euclidean c
 # use geo::algorithm::area::Area;
 #
 # let wkt_polygon = "POLYGON((-118.2662232 34.1038592,-118.2662339 34.1023485,-118.2639303 34.1023235,-118.2649125 34.1038878))";
-# let mut polygon: Polygon<f64> = Polygon::try_from_wkt_str(wkt_polygon).unwrap();
+# let mut polygon: Polygon = Polygon::try_from_wkt_str(wkt_polygon).unwrap();
 #
 use proj::Transform;
 // Transform from WGS84 to EPSG:6423
