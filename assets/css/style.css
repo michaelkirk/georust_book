@@ -69,7 +69,8 @@ header.codeblock-header {
 }
 
 .rust-callout {
-    background-color: #FFDDDD;
+    /* using transparency for background to get something that looks decent across themes */
+    background-color: #FF333355;
 }
 
 .rust-callout h1:first-child::after,
