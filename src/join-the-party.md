@@ -286,7 +286,7 @@ assert_eq!(tiniest_venue.fountains, 1);
 # let largest_venue = venues.last().unwrap();
 # assert_eq!(largest_venue.park, "Pelham Bay Park");
 # assert_eq!(largest_venue.borough, "Bronx");
-# approx::assert_relative_eq!(largest_venue.square_meters, 10835186.669072341);
+# approx::assert_relative_eq!(largest_venue.square_meters, 10835186.669072341, epsilon=1e1);
 # assert_eq!(largest_venue.fountains, 43);
 ```
 
