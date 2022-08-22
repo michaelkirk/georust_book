@@ -27,8 +27,3 @@ If you've previously done some geospatial analysis in another environment but ar
 In any case, the path of your life has led you here: the right place to get started. This set of examples will help you navigate familiar geospatial problems using a powerful programming language that may not quite be familiar to you yet.
 
 So feel free to [install Rust](https://www.rust-lang.org/learn/get-started); make yourself a latte (with or without Java); pick any topic on the left; and follow the [Coordinate Reference System](https://docs.qgis.org/2.18/en/docs/gentle_gis_introduction/coordinate_reference_systems.html) of your own heart as we dive headfirst into common geospatial questions and learn how to use computers to efficiently find the answers. 🖖🤖
-
-## License
-
-This book is available for you to freely use, duplicate, or modify under the terms of the [CC-BY](https://creativecommons.org/licenses/by/4.0/) license.
-
