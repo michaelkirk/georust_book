@@ -280,13 +280,13 @@ venues.sort_by(|venue_1, venue_2| venue_1.square_meters.partial_cmp(&venue_2.squ
 let tiniest_venue = venues.first().unwrap();
 assert_eq!(tiniest_venue.park, "Glendale Veterans Triangle");
 assert_eq!(tiniest_venue.borough, "Queens");
-approx::assert_relative_eq!(tiniest_venue.square_meters, 26.263444242984757, epsilon = 1e-4);
+approx::assert_relative_eq!(tiniest_venue.square_meters, 26.263444242984757, max_relative = 1e-4);
 assert_eq!(tiniest_venue.fountains, 1);
 
 # let largest_venue = venues.last().unwrap();
 # assert_eq!(largest_venue.park, "Pelham Bay Park");
 # assert_eq!(largest_venue.borough, "Bronx");
-# approx::assert_relative_eq!(largest_venue.square_meters, 10835186.669072341, epsilon=1e1);
+# approx::assert_relative_eq!(largest_venue.square_meters, 10835186.669072341, max_relative = 1e-4);
 # assert_eq!(largest_venue.fountains, 43);
 ```
 
