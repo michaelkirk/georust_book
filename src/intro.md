@@ -8,7 +8,7 @@ If a computer is answering questions about maps, congratulations! That's geospat
 
 OK, maybe that's an oversimplification — but it's not _so_ far off.
 
-Unlike a lot of abstract things that happen with computers (e.g. seeing "#nofilter" on a sepia-toned photo of someone with cartoon cat ears), the results of geospatial work can always be tied back to the real world we all share. Transportation planners use precise measurements to start building new roads to make traffic better in the future, while present-day commuters use map apps to navigate around the absolute chaos those planners have caused. Climate scientists measure rising ocean levels, while Florida real-estate agents measure the availability of brand-new oceanfront condos. Hikers at home dream about getting lost in the wilderness, while hikers lost in the wilderness dream about finding a way home.
+Unlike a lot of abstract things that happen with computers (e.g. seeing "#nofilter" on a sepia-toned photo of someone with cartoon cat ears), the results of geospatial work can be tied back to the real world. Transportation planners use precise measurements to start building new roads to make traffic better in the future, while present-day commuters use map apps to navigate around the absolute chaos those planners have caused. Climate scientists measure rising ocean levels, while Florida real-estate agents measure the availability of brand-new oceanfront condos. Hikers at home dream about getting lost in the wilderness, while hikers lost in the wilderness dream about finding a way home.
 
 No matter what your agenda is, information is power, and all kinds of people are using geospatial techniques to go places. It can be an exciting field indeed.
 
