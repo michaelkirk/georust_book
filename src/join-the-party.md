@@ -80,6 +80,8 @@ Let's look at some selected data from two data sources:
 
 **The five boroughs**
 
+![The five boroughs of New York City](images/nyc-boroughs.png)
+
 | borough_name | borough_shape                  |
 |--------------|--------------------------------|
 | Brooklyn     | `MULTIPOLYGON(((-73.86327...)` |
@@ -290,7 +292,18 @@ assert_eq!(tiniest_venue.fountains, 1);
 # assert_eq!(largest_venue.fountains, 3);
 ```
 
-We have found some excellent candidates for a party. These off the beaten path parks will let us spend hours of quality time with our friends, all while staying hydrated. What more could you possibly ask for on a lazy day in New York City?
+We have found some excellent candidates for a tiny party venue, the tiniest of all being the pint sized [Glendale Veterans Triangle](https://www.nycgovparks.org/parks/glendale-veterans-triangle/monuments/589).
+
+<div class="side-by-side">
+  <div>
+    <img height="600px" src="images/nyc-glendale-veterans-triangle-park.jpg" />
+  </div>
+  <div>
+    <img height="600px" src="images/nyc-glendale-veterans-triangle-drinking-fountain.jpg" />
+  </div>
+</div>
+
+These off the beaten path parks will let us spend hours of quality time with our friends, all while staying hydrated. What more could you possibly ask for on a lazy day in New York City?
 
 ## Drowning in Data
 
