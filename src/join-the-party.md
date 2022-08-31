@@ -7,7 +7,7 @@ Imagine living in New York City. Good pizza, Broadway, and one of the US's best 
 
 ## Drink from the Firehose
 
-That cafe looks a bit stuffy and a bit dated. Instead, let's embrace the timeless joy of the great outdoors by putting together a list of parks in the city. Somewhere in these shaded shapes, we can see the faint outline of a party beginning to form:
+That cafe looks a bit stuffy and a bit dated. Let's embrace the timeless joy of the great outdoors and look at a list of parks in the city — because even if the weather is bad, your friends will still be there for you (when the rain starts to pour). Somewhere in these shaded shapes, we can see the faint outline of a party beginning to form:
 
 ![The 2029 parks of New York City](images/nyc-parks.png)
 
@@ -17,7 +17,7 @@ Fortunately for us, we also have a list of every public drinking fountain that w
 
 ## Filtered Water
 
-We have these two different data sources — drinking fountains and parks. Solving spatial problems often involves finding ways to stir things up. Let's see how many of these parks contain at least one of these drinking fountains.
+Solving spatial problems often involves setting up a sort of [meet cute](https://en.wikipedia.org/wiki/Meet_cute) scenario between different data sources. Similar to the will-they-or-won't-they dynamic between Rachel and Ross, we have our own relationship (between drinking fountains and parks) that we need to explore. Let's see how many of these parks contain at least one of these drinking fountains.
 
 <header class="codeblock-header">Count MultiPolygons That Contain at Least One Point</header>
 
@@ -309,6 +309,6 @@ These off the beaten path parks will let us spend hours of quality time with our
 
 One thing you could definitely ask for are quicker results. The code above works, but it's really quite slow! Until now we've basically brute forced our solutions without much consideration for speed. We can sort of justify our laissez-faire approach to CPU usage for one-off calculations like this, but speed will become increasingly important as our data sets grow larger and processing gets more complicated, or if results need to be recomputed more frequently.
 
-Generally speaking, Rust is "real fast", but that's not the whole story. Let's say you're trying to get to [Harlem](https://en.wikipedia.org/wiki/Sugar_Hill,_Manhattan) in a hurry. If you happen to be [Tatyana McFadden](https://en.wikipedia.org/wiki/Tatyana_McFadden), five time winner and course record holder for the New York City Marathon women's weelchair division, you'd do all right. Alternatively, you could just recall that Duke Ellington tune and [take the A train](https://www.youtube.com/watch?v=1ggcQk67Mco&t=86s). With Rust's speedy physique as a baseline, the application of some problem-specific know-how will get you where you're going in record time.
+Generally speaking, Rust is "real fast", but that's not the whole story. Let's say you're trying to get to [Harlem](https://en.wikipedia.org/wiki/Sugar_Hill,_Manhattan) in a hurry. If you happen to be [Tatyana McFadden](https://en.wikipedia.org/wiki/Tatyana_McFadden), five-time winner and course record holder for the New York City Marathon women's weelchair division, you'd do all right. Alternatively, you could just recall that Duke Ellington tune and [take the A train](https://www.youtube.com/watch?v=1ggcQk67Mco&t=86s). With Rust's natural affinity for speed as a baseline, applying some problem-specific know-how can get us where we're going without breaking a sweat.
 
 In the next section we'll explore some of these tricks of the trade to speed up common geospatial operations. Quickly moving through the real world may require a jet engine, but that doesn't mean that your laptop needs to sound like one.
