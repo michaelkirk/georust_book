@@ -291,7 +291,7 @@ assert_eq!(tiniest_venue.fountains, 1);
 # assert_eq!(largest_venue.fountains, 43);
 ```
 
-We have found some excellent candidates for a tiny party venue, the tiniest of all being the pint sized [Glendale Veterans Triangle](https://www.nycgovparks.org/parks/glendale-veterans-triangle/monuments/589).
+We have found some excellent candidates for a tiny party venue, the tiniest of all being the pint sized [Glendale Veterans Triangle](https://www.nycgovparks.org/parks/glendale-veterans-triangle/monuments/589) in Queens.
 
 <div class="side-by-side">
   <div>
