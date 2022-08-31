@@ -33,7 +33,6 @@ fn reader(filename: &str) -> std::io::BufReader<std::fs::File> {
 
 let parks: Vec<geo::MultiPolygon> = deserialize_features_from_feature_collection(reader("parks.geojson"))
     .map(|park_result: geojson::Result<geojson::Feature>| {
-      // FIXME: Failing here
       let park_feature = park_result.expect("valid feature");
       geo::MultiPolygon::try_from(park_feature).expect("valid conversion")
     })
