@@ -1,3 +1,6 @@
+
+<img alt="A globe surrounded by the signature Rust gear - the GeoRust logo" src="images/georust.png" style="display: block; margin-left: auto; margin-right: auto; width: 40%;" />
+
 # Geospatial: Rust the Process
 
 Luke Skywalker once said that space is the final frontier, like it's just some distant concept far, far away. Set your lightsaber to stun just for a second though, and you quickly realize that space is vast and ever-present — it's all around us and between everything everywhere. It's familiar, yet elusive. How big is it? What should we do with it? Are we there yet?
