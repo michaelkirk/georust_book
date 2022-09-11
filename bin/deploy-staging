@@ -1,0 +1,3 @@
+set -ex
+mdbook build
+rsync -avz --delete --progress book/ geobook.endoftheworl.de:/var/www/geobook.endoftheworl.de

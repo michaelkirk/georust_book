@@ -1,0 +1,606 @@
+# Feature Creek
+
+In the [previous chapter](./youre-projecting.html) we worked with geometry stored in Well Known Text (WKT) format. It should come as no surprise that solving geospatial problems fundamentally involves geometry, but it's rarely *exclusively* about geometry. Usually there are other attributes associated with that geometry that we also want to explore. This combination of a geometry with its associated attribute data is often referred to as a _feature_, and a group of features can be called a _feature collection_.
+
+![Many spidering waterways consolidating into a major river](images/philly-waterways.png)
+
+In addition to being the "City of Brotherly Love," Philadelphia is also a city of water. We can describe shapes using Well Known Text, and all these waterways can be represented as a long list of WKT declarations:
+
+- `MULTIPOLYGON(....)`
+- `MULTIPOLYGON(....)`
+- `MULTIPOLYGON(....)`
+- ...
+
+## Cry Me a River(s)
+
+You can say "I'm going for a walk down by _the_ river" if you live in a one-river town, but in Philadelphia you need to be a little more specific. Let's associate a name with each of these shapes to clarify which river we're talking about.
+
+| creek_name        |  geometry          |
+|-------------------|--------------------|
+| Wissahickon Creek | MULTIPOLYGON(....) |
+| Schuylkill River  | MULTIPOLYGON(....) |
+| Delaware River    | MULTIPOLYGON(....) |
+
+![The many rivers of Philadelphia again, but with labels this time; the Delaware on the east, and the Schuylkill from the northwest](images/philly-waterways-labeled.png)
+
+Now we're talking specifics! The Delaware River defines Philadelphia's eastern boundary, and the Schuylkill River runs through the city from the North West. Even though it's not in very many spellcheck dictionaries, the Wissahickon is still a local favorite for urban walkers, so let's amble over to the Wissahickon Valley Park.
+
+## Bridging the Gap
+
+![Detail of the Wissahickon Creek](images/philly-wissahickon-valley-park.png)
+
+Walking _near_ water is neat, and walking **on** water is an advanced topic for [another book](https://en.wikipedia.org/wiki/Bible), but walking _over_ water? Now that's an infrastructural thrill within reach! So how do we find which segments of the Wissahickon have a bridge? Combining a geometry with other associated data into a _feature_ allows us to solve these kinds of problems.
+
+There are a lot of ways we can represent geospatial information. Recall that well-known text (WKT) is only concerned with representing a shape — it can't store whether that shape represents a bridge or has a name. One approach is to embed WKT into *another* more flexible format such as a CSV file, with one column containing WKT to describe the shape of the feature, and each additional column including another attribute, such as the name of the waterway or whether the segment has a bridge.
+
+![Zoomed in segment of a winding waterway, with one narrow segment highlighted](images/philly-bridge-selected.png)
+
+This [CSV of Philadelphia waterway segments](data/philly_waterways/philly_waterways.csv) does just that. Here's an excerpt:
+
+| creek_name        | inf1    | geometry           |
+|-------------------|---------|--------------------|
+| Cobbs Creek       |         | MULTIPOLYGON(....) |
+| Cobbs Creek       | Bridged | MULTIPOLYGON(....) |
+| Wise's Mill       |         | MULTIPOLYGON(....) |
+| Wissahickon Creek | Bridged | MULTIPOLYGON(....) |
+| Wissahickon Creek |         | MULTIPOLYGON(....) |
+| Wissahickon Creek | Bridged | MULTIPOLYGON(....) |
+
+You'll notice that a single creek is broken into many small segments in this data set. A "Bridged" segment indicates precisely where that bridge exists on the waterway (highlighted yellow in the image above).
+
+## The Short List (A-bridged)
+
+To make a handout for our "First Annual Wissahickon Walkabout," we want to include a list of bridges where participants can cross the Wissahickon. Some of these bridges are quite lovely, providing tourists an ideal location for selfies, while fly fishers cast shade while casting in the shade below.
+
+Let's combine a little attribute inspection with a little geometric processing to find the best bridges for our walk:
+
+<header class="codeblock-header">Process a CSV</header>
+
+```rust
+use csv;
+use geo::algorithm::{Centroid, Area};
+use geo::geometry::{Point, Geometry};
+use proj::Transform;
+use wkt;
+
+let mut feature_reader = {
+  use std::fs::File;
+  let file = File::open("src/data/philly_waterways/philly_waterways.csv").expect("file path must be valid");
+  csv::Reader::from_reader(file)
+};
+
+let mut acceptable_walkabout_bridges: Vec<Point> = vec![];
+
+for row in feature_reader.records() {
+  let creek_segment = row.expect("must be able to read row from CSV");
+
+  let creek_name = creek_segment.get(0).expect("'creek_name' field must be present");
+  let infrastructure_label = creek_segment.get(1).expect("'inf1' field must be present");
+  let geometry_str = creek_segment.get(2).expect("`geometry` field must be present");
+
+  // We're only interested in Bridged segments.
+  if infrastructure_label != "Bridged" {
+    continue;
+  }
+
+  // We're only interested in bridges that cross Wissahickon Creek.
+  if creek_name != "Wissahickon Creek" {
+    continue;
+  }
+
+  // Ok, we've utilized some attributes to narrow our search,
+  // now let's dig deeper with some geometric analysis.
+
+  use wkt::TryFromWkt;
+  let geometry = Geometry::try_from_wkt_str(geometry_str).expect("wkt must be valid");
+
+  let bridge_centroid = geometry.centroid().expect("a centroid should exist for any non-empty geometry");
+
+  // We're only interested in the part of the Wissahickon Creek that's within
+  // the Wissahickon Valley Park.
+  let SOUTHERN_PARK_BORDER = 40.013214;
+  let NORTHERN_PARK_BORDER = 40.084306;
+  if bridge_centroid.y() < SOUTHERN_PARK_BORDER || bridge_centroid.y() > NORTHERN_PARK_BORDER {
+    continue;
+  }
+
+  // Compute the size of the bridge
+  let bridge_area = {
+    // In the previous article about projections, we learned how to transform lat/lon to a local
+    // projection to get useful area calculations.
+    //
+    // WGS84 - World Geodetic System, aka lat/lon
+    // EPSG:3364 - NAD83(HARN) / Pennsylvania South (meters)
+    let geometry_in_meters = geometry.transformed_crs_to_crs("WGS84", "EPSG:3364").expect("valid transformation");
+    geometry_in_meters.unsigned_area()
+  };
+
+  // We're not intested in walking across large automobile bridges.
+  if bridge_area > 250.0 {
+    continue;
+  }
+
+  // Using attribute data and geometric processing, we've identified a good walking bridge!
+  acceptable_walkabout_bridges.push(bridge_centroid);
+}
+
+assert_eq!(acceptable_walkabout_bridges.len(), 8);
+approx::assert_relative_eq!(acceptable_walkabout_bridges[3], Point::new(-75.22563703858332, 40.071892693259315));
+```
+
+Eight bridges seems like the perfect number of crossings for an enthusiastic walk about the Wissahickon. These bridges run the gamut, including wee pedestrian crossings, quick bicycle connectors, and a couple not-too-huge bridges shared with cars. One of the most interesting bridges we'll encounter (near [40.07189°N, 75.22563°W](https://www.openstreetmap.org/#map=19/40.07189/-75.22563)) is the historic [Thomas Mill Covered Bridge](https://en.wikipedia.org/wiki/Thomas_Mill_Covered_Bridge). Built in 1855 and fixed up by the [Works Progress Administration](https://en.wikipedia.org/wiki/Works_Progress_Administration) in 1939, it's the oldest covered bridge in any major US City.
+
+![historic black and white photograph of a covered bridge](images/philly-thomas-mill-bridge.jpg)
+
+Just like the Thomas Mill bridge probably felt in 1938, our code could benefit from a good [deal](https://en.wikipedia.org/wiki/New_Deal) of tender loving care. One thing you may have noticed is the repetitive nature of `get`ting numbered fields from the CSV and then `expect`ing no errors:
+
+<header class="codeblock-header">Unfortunate Boilerplate</header>
+
+```rust,ignore
+let creek_name = creek_segment.get(0).expect("'creek_name' field must be present");
+let infrastructure_label = creek_segment.get(1).expect("'inf1' field must be present");
+let geometry_str = creek_segment.get(2).expect("`geometry` field must be present");
+```
+
+For each row in the CSV, getting fields by number in an ad-hoc fashion like this is simple, but it's a little loosey-goosey: We have to remember what order the fields are in and also write some boring error-checking boilerplate.
+
+## A *Struct*ured Alternative
+
+Instead, we can parse each row into a rigidly defined `struct`. Let's take another look at our data:
+
+| creek_name        | inf1    | geometry           |
+|-------------------|---------|--------------------|
+| Wissahickon Creek | Bridged | MULTIPOLYGON(....) |
+
+This schema can be converted into a Rust struct like this:
+
+<header class="codeblock-header">A Row in the CSV as a Rust Struct</header>
+
+```rust
+struct CreekSegment {
+  creek_name: String,
+  inf1: String,
+  geometry: geo::geometry::Geometry
+}
+```
+
+<div class="callout rust-callout">
+
+### Structs in rust
+
+A struct is a type that holds multiple related values. You can read more in [The Rust Book](https://doc.rust-lang.org/book/ch05-01-defining-structs.html).
+
+</div>
+
+
+Notice how each field of the `CreekSegment` struct corresponds to a column in our CSV input. From here, we could write boilerplate code to populate each of these fields:
+
+<header class="codeblock-header">Revised, but Still Unfortunate, Boilerplate</header>
+
+```rust,ignore
+let creek_name = creek_segment.get(0).expect("'creek_name' field must be present");
+let infrastructure_label = creek_segment.get(1).expect("'inf1' field must be present");
+let geometry_str = creek_segment.get(2).expect("`geometry` field must be present");
+
+let geometry = Geometry::try_from_wkt_str(geometry_str).expect("wkt must be valid");
+
+let creek_segment = CreekSegment {
+  creek_name,
+  inf1: infrastructure_label,
+  geometry
+};
+```
+
+Deserializing information from a CSV file into a more ergonomic form like this isn't exactly cutting-edge stuff in the world of Computer Science — actually it's kind of tedious and error prone. Fortunately for us, we can stand on the shoulders of giants and turn to the wisdom of those who've deserialized before.
+
+## Serde, Slayer of Boilerplate
+
+The excellent [`serde`](https://serde.rs) crate is a framework for **ser**ializing and **de**serializing data across a variety of formats. We can use serde to annotate the above struct declaration, then build these structs from a CSV without all the verbose error checking and field assignment code.
+
+<header class="codeblock-header">Declarative Processing with Serde</header>
+
+```rust
+#[derive(serde::Deserialize)]
+struct CreekSegment {
+  creek_name: String,
+
+  // serde offers some customizations so that we can use sensible
+  // names in our code without having to modify our source data, whose
+  // names we might not control.
+  #[serde(rename = "inf1" )]
+  infrastructure_label: String,
+
+  // serde has built-in support for common data types like numbers and strings,
+  // and it also allows other crates (like `wkt`) to build custom deserializers
+  // so that we can create complex data types (like this `Geometry`)
+  // directly from our input data.
+  #[serde(deserialize_with = "wkt::deserialize_wkt")]
+  geometry: geo::geometry::Geometry
+}
+```
+
+<div class="callout rust-callout">
+
+## Attributes in Rust
+
+In the above Rust code, the `#[...]` bits are called _attributes_. The [official Rust documentation on attributes](https://doc.rust-lang.org/reference/attributes.html) is a little long in the tooth, but that's because attribute are really powerful and can be used for a lot of different things. At the risk of oversimplifying, attributes are just a way to give pieces of code extra behavior. In this case, by annotating our struct with `#[derive(serde::Deserialize)]`, we give our struct the ability to be built from a .csv file or other serde data sources. We then tweak the way that serde will build our struct with the serde-specific `#[serde(...)]` attributes.
+
+</div>
+
+## Keeping it tidy
+
+Finally, before we return to our example, a struct like this is also the perfect place to hang some little helper methods:
+
+<header class="codeblock-header">Organizing Our Code with Struct Helper Methods</header>
+
+```rust
+# #[derive(serde::Deserialize)]
+# struct CreekSegment {
+#   creek_name: String,
+#
+#   #[serde(rename = "inf1" )]
+#   infrastructure_label: String,
+#
+#   #[serde(deserialize_with = "wkt::deserialize_wkt")]
+#   geometry: geo::geometry::Geometry
+# }
+#
+impl CreekSegment {
+  fn is_bridge(&self) -> bool {
+    self.infrastructure_label == "Bridged"
+  }
+
+  fn centroid(&self) -> geo::Point {
+    use geo::algorithm::Centroid;
+    self.geometry.centroid().expect("a centroid exists for any non-empty geometry")
+  }
+
+  fn is_acceptable_size(&self) -> bool {
+     // We're not intested in walking across large automobile bridges.
+     self.square_meters() < 250.0
+  }
+
+  fn square_meters(&self) -> f64 {
+    use geo::algorithm::Area;
+    use proj::Transform;
+
+    // In the previous article about projections, we learned how to transform lat/lon to a local
+    // projection to get useful area calculations.
+    //
+    // WGS84 - World Geodetic System, aka lat/lon
+    // EPSG:3364 - NAD83(HARN) / Pennsylvania South (meters)
+    let geometry_in_meters = self.geometry.transformed_crs_to_crs("WGS84", "EPSG:3364").expect("valid transformation");
+    geometry_in_meters.unsigned_area()
+  }
+}
+```
+
+Let's see how we can use the above code to clean up our earlier implementation:
+
+<header class="codeblock-header">Processing a CSV with Serde</header>
+
+```rust
+# use csv;
+# use geo::algorithm::Area;
+# use geo::geometry::{Point, Geometry};
+# use wkt;
+#
+# #[derive(serde::Deserialize)]
+# struct CreekSegment {
+#   creek_name: String,
+#
+#   #[serde(rename = "inf1" )]
+#   infrastructure_label: String,
+#
+#   #[serde(deserialize_with = "wkt::deserialize_wkt")]
+#   geometry: geo::geometry::Geometry
+# }
+#
+# impl CreekSegment {
+#   fn is_bridge(&self) -> bool {
+#     self.infrastructure_label == "Bridged"
+#   }
+#
+#   fn centroid(&self) -> geo::Point {
+#     use geo::algorithm::Centroid;
+#     self.geometry.centroid().expect("a centroid exists for any non-empty geometry")
+#   }
+#
+#   fn is_acceptable_size(&self) -> bool {
+#      // We're not intested in walking across large automobile bridges.
+#      self.square_meters() < 250.0
+#   }
+#
+#   fn square_meters(&self) -> f64 {
+#     use geo::algorithm::Area;
+#     use proj::Transform;
+#
+#     // In the previous article about projections, we learned how to transform lat/lon to a local
+#     // projection to get useful area calculations.
+#     //
+#     // WGS84 - World Geodetic System, aka lat/lon
+#     // EPSG:3364 - NAD83(HARN) / Pennsylvania South (meters)
+#     let geometry_in_meters = self.geometry.transformed_crs_to_crs("WGS84", "EPSG:3364").expect("valid transformation");
+#     geometry_in_meters.unsigned_area()
+#   }
+# }
+#
+# let mut feature_reader = {
+#   use std::fs::File;
+#   let file = File::open("src/data/philly_waterways/philly_waterways.csv").expect("file path must be valid");
+#   csv::Reader::from_reader(file)
+# };
+#
+let mut acceptable_walkabout_bridges: Vec<CreekSegment> = vec![];
+
+for record in feature_reader.deserialize() {
+
+  // All of our error checking and field parsing can be replaced by
+  // a single line. The rest is automatically inferred from our
+  // serde-annotated struct declaration.
+  let creek_segment: CreekSegment = record.expect("creek segment must be valid");
+
+  // At this point we know all the fields of creek_segment
+  // have been populated.
+
+  // We're only interested in Bridged segments.
+  if !creek_segment.is_bridge() {
+    continue;
+  }
+
+  // We're only interested in bridges that cross Wissahickon Creek.
+  if creek_segment.creek_name != "Wissahickon Creek" {
+    continue;
+  }
+
+  // Ok, we've utilized some attributes to narrow our search,
+  // now let's dig deeper with some geometric analysis.
+
+  let bridge_centroid = creek_segment.centroid();
+
+  // We're only interested in the part of the Wissahickon Creek that's within
+  // the Wissahickon Valley Park.
+  let SOUTHERN_PARK_BORDER = 40.013214;
+  let NORTHERN_PARK_BORDER = 40.084306;
+  if bridge_centroid.y() < SOUTHERN_PARK_BORDER || bridge_centroid.y() > NORTHERN_PARK_BORDER {
+    continue;
+  }
+
+  // We're not intested in walking across large automobile bridges.
+  if !creek_segment.is_acceptable_size() {
+    continue;
+  }
+
+  // Using attribute data and geometric processing, we've identified a good walking bridge!
+  acceptable_walkabout_bridges.push(creek_segment);
+}
+
+# assert_eq!(acceptable_walkabout_bridges.len(), 8);
+# approx::assert_relative_eq!(acceptable_walkabout_bridges[3].centroid(), Point::new(-75.22563703858332, 40.071892693259315));
+```
+
+Using serde and structs like this is completely optional, but it can help keep your code tidy — especially as programs get more complex. If you prefer the ad-hoc style of the original example (e.g. accessing fields by number) and you don't care about adding any cute little helper methods, that's totally fine. Even if you aren't doing calculations on rivers, just go with the flow.
+
+## CSV U L8R 
+
+CSV files can feel charmingly anachronistic, like a weird antique tool that sometimes still works surprisingly well. Tons of programs can read and write CSV files, and you can quickly and easily examine their contents in any spreadsheet app. However, this simplicity often comes at a price, and the limitations of the format are not always immediately obvious.
+
+For example, when someone sends you a CSV file that contains geographic data, the layout is always kind of a new mystery to be solved. There is no strong convention for the way its columns will be named, where they will be positioned, or how its geometry will be represented. Although WKT is common, it's far from universal: A CSV of points, for instance, will sometimes include two `latitude` and `longitude` columns instead of a single WKT column.
+
+Another problem with CSV files is that it's not always clear what type of information is in a column:
+
+| phone                 | description |
+|-----------------------|-------------|
+| 311                   | info        |
+| 911                   | emergency   |
+| ...                   | ...         |
+| 1-818-912-8200 ext. 4 | office      |
+
+Unless you examine the entire list in advance, you might not realize that `phone` is a text column, not a numeric one. Some formats are always clear about the distinction between numbers and text, but CSV isn't one of them.
+
+This lack of standardization means that whenever you encounter geographic data stored in a CSV, first you have to dig around a bit to orient yourself and figure out how to align your program with the CSV author's conventions.
+
+## OMGeoJSON
+
+[GeoJSON](https://geojson.org/) is another available format for representing geospatial features (geometry + data) with a different set of trade-offs. Seeing is believing, so here's how some of our previous data could be structured in GeoJSON:
+
+```json
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "creek_name": "Haines-Dittingers Creek",
+        "inf1": "Impoundment"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -75.2512163863237,
+              40.2171158853747
+            ],
+            [
+              -75.2512026232353,
+              40.217108225299
+            ],
+            [
+              -75.2511416958994,
+              40.2170817213073
+            ],
+            ...
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "creek_name": "Wissahickon Creek",
+        "inf1": "Bridged"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -75.25461361296729,
+              40.1820761530732
+            ],
+            [
+              -75.2545303055114,
+              40.1819601471794
+            ],
+            [
+              -75.25446431085831,
+              40.1820297432309
+            ],
+            ...
+          ]
+        ]
+      }
+    },
+    ...
+}
+```
+
+GeoJSON is pretty popular, especially for mapping and other geospatial applications on the web. This is largely because it's an extension of [JSON](https://en.wikipedia.org/wiki/JSON), which is a format that web browsers already use extensively for all kinds of information. That makes it easy for web programmers to manipulate GeoJSON using JavaScript in the browser.
+
+However, GeoJSON has long since left the domain of "web-only" formats, and now many other geospatial tools know how to handle it too: [QGIS](https://qgis.org), [GEOS](https://libgeos.org/), [JTS](https://locationtech.github.io/jts/), [GDAL](https://gdal.org/), and [Shapely](https://github.com/shapely/shapely) are all fluent in GeoJSON.
+
+Let's run our Wissahickon calculations again, only this time using information structured in GeoJSON format instead of a CSV. What's nice about using serde, is just how little of our code actually needs to change to support this completely different encoding:
+
+<header class="codeblock-header">Process GeoJSON with Serde</header>
+
+```rust
+# use csv;
+# use geo::algorithm::Area;
+# use geo::geometry::{Point, Geometry};
+# use wkt;
+#
+#[derive(serde::Deserialize)]
+struct CreekSegment {
+   creek_name: String,
+
+   #[serde(rename = "inf1" )]
+   infrastructure_label: String,
+
+   // #[serde(deserialize_with = "wkt::deserialize_wkt")]
+   #[serde(deserialize_with = "geojson::deserialize_geometry")]
+   geometry: geo::geometry::Geometry
+}
+
+# impl CreekSegment {
+#   fn is_bridge(&self) -> bool {
+#     self.infrastructure_label == "Bridged"
+#   }
+#
+#   fn centroid(&self) -> geo::Point {
+#     use geo::algorithm::Centroid;
+#     self.geometry.centroid().expect("a centroid exists for any non-empty geometry")
+#   }
+#
+#   fn is_acceptable_size(&self) -> bool {
+#      // We're not intested in walking across large automobile bridges.
+#      self.square_meters() < 250.0
+#   }
+#
+#   fn square_meters(&self) -> f64 {
+#     use geo::algorithm::Area;
+#     use proj::Transform;
+#
+#     // In the previous article about projections, we learned how to transform lat/lon to a local
+#     // projection to get useful area calculations.
+#     //
+#     // WGS84 - World Geodetic System, aka lat/lon
+#     // EPSG:3364 - NAD83(HARN) / Pennsylvania South (meters)
+#     let geometry_in_meters = self.geometry.transformed_crs_to_crs("WGS84", "EPSG:3364").expect("valid transformation");
+#     geometry_in_meters.unsigned_area()
+#   }
+# }
+#
+let mut feature_reader = {
+  use std::fs::File;
+  let file = File::open("src/data/philly_waterways/philly_waterways.geojson").expect("file path must be valid");
+  // csv::Reader::from_reader(file)
+  geojson::FeatureReader::from_reader(file)
+};
+
+let mut acceptable_walkabout_bridges: Vec<CreekSegment> = vec![];
+
+for record in feature_reader.deserialize().expect("valid feature collection") {
+
+  // Thanks to the magic of serde, the rest of this example is exactly
+  // the same as the serde CSV example above!
+  //
+  // We've hidden it for brevity, but you can see the rest of the code if you click
+  // the "eyeball" icon in the top right corner of this code block.
+
+  // ...
+
+#   // All of our error checking and field parsing can be replaced by
+#   // a single line. The rest is automatically inferred from our
+#   // serde-annotated struct declaration.
+#   let creek_segment: CreekSegment = record.expect("creek segment must be valid");
+#
+#   // At this point we know all the fields of creek_segment
+#   // have been populated.
+#
+#   // We're only interested in Bridged segments.
+#   if !creek_segment.is_bridge() {
+#     continue;
+#   }
+#
+#   // We're only interested in bridges that cross Wissahickon Creek.
+#   if creek_segment.creek_name != "Wissahickon Creek" {
+#     continue;
+#   }
+#
+#   // Ok, we've utilized some attributes to narrow our search,
+#   // now let's dig deeper with some geometric analysis.
+#
+#   let bridge_centroid = creek_segment.centroid();
+#
+#   // We're only interested in the part of the Wissahickon Creek that's within
+#   // the Wissahickon Valley Park.
+#   let SOUTHERN_PARK_BORDER = 40.013214;
+#   let NORTHERN_PARK_BORDER = 40.084306;
+#   if bridge_centroid.y() < SOUTHERN_PARK_BORDER || bridge_centroid.y() > NORTHERN_PARK_BORDER {
+#     continue;
+#   }
+#
+#   // We're not intested in walking across large automobile bridges.
+#   if !creek_segment.is_acceptable_size() {
+#     continue;
+#   }
+#
+#   // Using attribute data and geometric processing, we've identified a good walking bridge!
+  acceptable_walkabout_bridges.push(creek_segment);
+}
+
+assert_eq!(acceptable_walkabout_bridges.len(), 8);
+approx::assert_relative_eq!(acceptable_walkabout_bridges[3].centroid(), Point::new(-75.22563703858332, 40.071892693259315));
+```
+
+## Straying from the Format
+
+Ubiquity is arguably GeoJSON's biggest upside, but it's not the perfect format for everything. 
+
+![Dump truck on the street, whose read wheel has fallen into a sinkhole](images/philly-sinkhole-dump-truck.jpg)
+<span class="photo-credit">Photo via [@orentalks](https://twitter.com/orentalks/status/1070372166867320832)</span>
+
+Like a truck on its way to fix a sinkhole (but then falling into another sinkhole before it can get there), it's good to be aware of a few potential pitfalls in advance.
+
+If you scroll up to the GeoJSON sample above, you may notice that the way it represents geometry is quite verbose. Unlike WKT, it's not as easy for humans to read at a glance, and compared to some other formats, it's not very efficient for computers to store or transmit. JSON editors exist, but they aren't nearly as powerful or widespread as spreadsheet programs that can easily read CSVs. GeoJSON also lacks a _spatial index_ (future topic!) so certain operations on complex geometries are slow.
+
+There's an entire world of alternative formats available — each with their own set of trade-offs. Luckily, Rust has support for pretty much all of them at this point. Aside from [WKT](https://docs.rs/wkt) and [GeoJSON](https://docs.rs/geojson), other popular choices include:
+
+* [Shapefiles (.shp)](https://docs.rs/shapefile) - A venerable (and often maligned) all-purpose format.
+* [Geopackage (.gpx)](https://docs.rs/geozero) - The "preferred" format for lots of desktop GIS applications these days, built on top of [SQLite](https://www.sqlite.org).
+* [Flatgeobuf (.fgb)](https://docs.rs/flatgeobuf) - A newer format that is well-suited for efficient and random read-only access.
+
+## Give Yourself Some Space
+
+Up next, we'll learn how to combine attributes across multiple data sources using *spatial joins*.

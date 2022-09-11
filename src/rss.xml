@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+<channel>
+    <title>Georust: Rust the Process</title>
+    <link>https://book.georust.org</link>
+    <description>A friendly introduction to using the Rust language for geospatial computation.</description>
+    <item>
+        <title>You're Projecting</title>
+        <link>https://book.georust.org/youre-projecting.html</link>
+        <guid>https://book.georust.org/youre-projecting.html</guid>
+        <pubDate>Sat, 10 Sep 2022 00:00:00 GMT</pubDate>
+        <description>A first taste of using Rust, where we use the "proj" library to transform latitude and longitude into more useful units of measurement like meters.</description>
+    </item>
+    <item>
+        <title>Feature Creek</title>
+        <link>https://book.georust.org/feature-creek.html</link>
+        <guid>https://book.georust.org/feature-creek.html</guid>
+        <pubDate>Sun, 11 Sep 2022 00:00:00 GMT</pubDate>
+        <description>Explore the different ways geospatial data can be stored and what using them looks like in Rust.</description>
+    </item>
+    <item>
+        <title>Join the Party</title>
+        <link>https://book.georust.org/join-the-party.html</link>
+        <guid>https://book.georust.org/join-the-party.html</guid>
+        <pubDate>Mon, 12 Sep 2022 00:00:00 GMT</pubDate>
+        <description>Use spatial joins to combine attributes from multiple data sets based on their spatial relationship.</description>
+    </item>
+</channel>
+</rss>
