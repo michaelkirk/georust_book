@@ -2,7 +2,7 @@
 
 This is a collection of lessons to help people get started using [Rust](https://rust-lang.org) for geospatial analysis.
 
-## Pre-requisites
+## Pre-requisites for Building
 
 **Install rust**: https://www.rust-lang.org/tools/install
 
