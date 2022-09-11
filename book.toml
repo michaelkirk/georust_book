@@ -3,7 +3,7 @@ authors = ["Michael Kirk", "Joshua Lund"]
 language = "en"
 multilingual = false
 src = "src"
-title = "Geospatial: Rust the Process"
+title = "Geospatial Rust"
 
 [output.html]
 additional-css = ["assets/css/style.css"]
