@@ -223,11 +223,11 @@ struct CreekSegment {
 
 ## Attributes in Rust
 
-In the above Rust code, the `#[...]` bits are called _attributes_. The [official Rust documentation on attributes](https://doc.rust-lang.org/reference/attributes.html) is a little long in the tooth, but that's because attribute are really powerful and can be used for a lot of different things. At the risk of oversimplifying, attributes are just a way to give pieces of code extra behavior. In this case, by annotating our struct with `#[derive(serde::Deserialize)]`, we give our struct the ability to be built from a .csv file or other serde data sources. We then tweak the way that serde will build our struct with the serde-specific `#[serde(...)]` attributes.
+In the above Rust code, the `#[...]` bits are called _attributes_. The [official Rust documentation on attributes](https://doc.rust-lang.org/reference/attributes.html) is a little long in the tooth, but that's because attributes are really powerful and can be used for a lot of different things. At the risk of oversimplifying, attributes are just a way to give pieces of code extra behavior. In this case, by annotating our struct with `#[derive(serde::Deserialize)]`, we give our struct the ability to be built from a .csv file or other serde data sources. We then tweak the way that serde will build our struct with the serde-specific `#[serde(...)]` attributes.
 
 </div>
 
-## Keeping it tidy
+## Keeping It Tidy
 
 Finally, before we return to our example, a struct like this is also the perfect place to hang some little helper methods:
 
