@@ -68,7 +68,7 @@ Counting is simple, but oftentimes we will need to do something more complex lik
 
 Let's look at some selected data from two data sources:
 
-**List of parks (same as above)**
+**List of Parks (Same As Above)**
 
 | park_name            | park_shape                       |
 |----------------------|----------------------------------|
@@ -77,7 +77,7 @@ Let's look at some selected data from two data sources:
 | Turtle Playground    | `MULTIPOLYGON(((-73.82693385...` |
 | ...                  | ...                              |
 
-**The five boroughs**
+**The Five Boroughs**
 
 ![The five boroughs of New York City](images/nyc-boroughs.png)
 
@@ -291,7 +291,7 @@ assert_eq!(tiniest_venue.fountains, 1);
 # assert_eq!(largest_venue.fountains, 43);
 ```
 
-We have found some excellent candidates for a tiny party venue, the tiniest of all being the pint sized [Glendale Veterans Triangle](https://www.nycgovparks.org/parks/glendale-veterans-triangle/monuments/589) in Queens.
+We have found some excellent candidates for a tiny party venue, the tiniest of all being the pint-sized [Glendale Veterans Triangle](https://www.nycgovparks.org/parks/glendale-veterans-triangle/monuments/589) in Queens.
 
 <div class="side-by-side">
   <div>
