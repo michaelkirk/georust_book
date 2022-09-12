@@ -294,12 +294,8 @@ assert_eq!(tiniest_venue.fountains, 1);
 We have found some excellent candidates for a tiny party venue, the tiniest of all being the pint-sized [Glendale Veterans Triangle](https://www.nycgovparks.org/parks/glendale-veterans-triangle/monuments/589) in Queens.
 
 <div class="side-by-side">
-  <div>
-    <img height="600px" src="images/nyc-glendale-veterans-triangle-park.jpg" />
-  </div>
-  <div>
-    <img height="600px" src="images/nyc-glendale-veterans-triangle-drinking-fountain.jpg" />
-  </div>
+  <img src="images/nyc-glendale-veterans-triangle-park.jpg" />
+  <img src="images/nyc-glendale-veterans-triangle-drinking-fountain.jpg" />
 </div>
 
 These off the beaten path parks will let us spend hours of quality time with our friends, all while staying hydrated. What more could you possibly ask for on a lazy day in New York City?
