@@ -598,7 +598,7 @@ If you scroll up to the GeoJSON sample above, you may notice that the way it rep
 There's an entire world of alternative formats available — each with their own set of trade-offs. Luckily, Rust has support for pretty much all of them at this point. Aside from [WKT](https://docs.rs/wkt) and [GeoJSON](https://docs.rs/geojson), other popular choices include:
 
 * [Shapefiles (.shp)](https://docs.rs/shapefile) - A venerable (and often maligned) all-purpose format.
-* [Geopackage (.gpx)](https://docs.rs/geozero) - The "preferred" format for lots of desktop GIS applications these days, built on top of [SQLite](https://www.sqlite.org).
+* [Geopackage (.gpkg)](https://docs.rs/geozero) - The "preferred" format for lots of desktop GIS applications these days, built on top of [SQLite](https://www.sqlite.org).
 * [Flatgeobuf (.fgb)](https://docs.rs/flatgeobuf) - A newer format that is well-suited for efficient and random read-only access.
 
 ## Give Yourself Some Space
