@@ -1,3 +1,7 @@
 set -ex
 mdbook build
+
 rsync -avz --delete --progress book/ book.georust.org:/var/www/book.georust.org
+
+# Create deployment summary on remote host
+bin/print-deployment-summary | ssh book.georust.org "cat > /var/www/book.georust.org/deployment-summary.txt"

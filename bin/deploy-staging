@@ -1,3 +1,7 @@
 set -ex
 mdbook build
-rsync -avz --delete --progress book/ geobook.endoftheworl.de:/var/www/geobook.endoftheworl.de
+
+rsync -avz --delete --progress book/ geobook-preview.endoftheworl.de:/var/www/geobook-preview.endoftheworl.de
+
+# Create deployment summary on remote host
+bin/print-deployment-summary | ssh geobook-preview.endoftheworl.de "cat > /var/www/geobook-preview.endoftheworl.de/deployment-summary.txt"

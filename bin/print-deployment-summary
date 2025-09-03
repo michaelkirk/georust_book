@@ -1,0 +1,7 @@
+#!/bin/bash
+echo "Deployment Summary"
+echo "================="
+echo "Time: $(date +"%Y-%m-%d %H:%M:%S %Z")"
+echo ""
+echo "Git Information:"
+git log -1
