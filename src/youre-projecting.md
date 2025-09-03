@@ -39,9 +39,9 @@ Finally, we'll be using the [geo crate](https://crates.io/crates/geo) (a collect
 Let's add these dependencies to our `Cargo.toml` file and get started:
 ```toml,ignore
 [dependencies]
-geo = "0.21.0"
-proj = "0.27.0"
-wkt = "0.10.3"
+geo = "0.31.0"
+proj = "0.31.0"
+wkt = "0.14.0"
 ```
 
 OK, now let's look for a body of water and dive right in.
@@ -104,7 +104,7 @@ use proj::Transform;
 point.transform_crs_to_crs("WGS84", "EPSG:6423").unwrap();
 
 assert_eq!(point.x(), 1975508.4666086377);
-assert_eq!(point.y(), 566939.9943794473);
+assert_eq!(point.y(), 566939.9943794475);
 ```
 
 If we want to export or share our results, the `wkt` crate can serialize a point's in-memory representation back to well-known text.
@@ -127,7 +127,7 @@ If we want to export or share our results, the `wkt` crate can serialize a point
 use wkt::ToWkt;
 let wkt_output = point.wkt_string();
 
-assert_eq!(wkt_output, "POINT(1975508.4666086377 566939.9943794473)");
+assert_eq!(wkt_output, "POINT(1975508.4666086377 566939.9943794475)");
 ```
 
 ### Connect the Dots

@@ -1,5 +1,5 @@
 #[doc = include_str!("./youre-projecting.md")]
-pub struct A1YourProjecting;
+pub struct A1YoureProjecting;
 
 #[doc = include_str!("./feature-creek.md")]
 pub struct A2FeatureCreek;

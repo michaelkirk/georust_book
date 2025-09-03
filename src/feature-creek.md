@@ -487,8 +487,8 @@ struct CreekSegment {
    #[serde(rename = "inf1" )]
    infrastructure_label: String,
 
-   // #[serde(deserialize_with = "wkt::deserialize_wkt")]
-   #[serde(deserialize_with = "geojson::deserialize_geometry")]
+   // 👇 #[serde(deserialize_with = "wkt::deserialize_wkt")]
+   #[serde(deserialize_with = "geojson::de::deserialize_geometry")]
    geometry: geo::geometry::Geometry
 }
 
@@ -524,7 +524,7 @@ struct CreekSegment {
 let mut feature_reader = {
   use std::fs::File;
   let file = File::open("src/data/philly_waterways/philly_waterways.geojson").expect("file path must be valid");
-  // csv::Reader::from_reader(file)
+  // 👇 csv::Reader::from_reader(file)
   geojson::FeatureReader::from_reader(file)
 };
 
@@ -532,7 +532,7 @@ let mut acceptable_walkabout_bridges: Vec<CreekSegment> = vec![];
 
 for record in feature_reader.deserialize().expect("valid feature collection") {
 
-  // Thanks to the magic of serde, the rest of this example is exactly
+  // 👉 Thanks to the magic of serde, the rest of this example is exactly
   // the same as the serde CSV example above!
   //
   // We've hidden it for brevity, but you can see the rest of the code if you click
