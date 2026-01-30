@@ -113,7 +113,7 @@ Let's start building a list of venues by combining each park with the name of th
 #   std::io::BufReader::new(std::fs::File::open(path).expect("file path must be valid"))
 # }
 
-// Using what we learned in the previous section on Features, we'll
+// Using what we learned in the previous lesson on Features, we'll
 // deserialize the input GeoJSON into structs using serde.
 
 // First Input
@@ -236,7 +236,7 @@ for park in &parks {
     if borough.geometry.intersects(&park.geometry) {
       use proj::Transform;
       // Project the geometry in order to calculate a useful area.
-      // See our first section for more on projections.
+      // See our first lesson for more on projections.
       //
       // EPSG:32115 - New York Eastern (meters)
       let square_meters = park.geometry
