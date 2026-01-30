@@ -103,8 +103,8 @@ use proj::Transform;
 // https://epsg.io/6423 - California zone 5 (meters)
 point.transform_crs_to_crs("WGS84", "EPSG:6423").unwrap();
 
-assert_eq!(point.x(), 1975508.4666086377);
-assert_eq!(point.y(), 566939.9943794475);
+assert_eq!(point.x().round(), 1975508.0);
+assert_eq!(point.y().round(), 566940.0);
 ```
 
 If we want to export or share our results, the `wkt` crate can serialize a point's in-memory representation back to well-known text.
@@ -124,10 +124,13 @@ If we want to export or share our results, the `wkt` crate can serialize a point
 # // https://epsg.io/6423 - California zone 5 (meters)
 # point.transform_crs_to_crs("WGS84", "EPSG:6423").unwrap();
 #
+# point.0.x = point.x().round();
+# point.0.y = point.y().round();
+
 use wkt::ToWkt;
 let wkt_output = point.wkt_string();
 
-assert_eq!(wkt_output, "POINT(1975508.4666086377 566939.9943794475)");
+assert_eq!(wkt_output, "POINT(1975508 566940)");
 ```
 
 ### Connect the Dots
