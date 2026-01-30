@@ -20,7 +20,7 @@ Run the local development service:
 
 ## Run Tests
 
-The lessons include a lot of code snippets. Most of them are runnable. You can build them and verify the assertions within. Some of them are quite slow, so be patient.
+The lessons include a lot of code snippets. Most of them are runnable. You can build them and verify the assertions within. Some of them are quite slow, so run them in release mode and be patient.
 
-    cargo test
+    cargo test --release
 

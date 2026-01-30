@@ -1,0 +1,2 @@
+# Some of the tests, in particular in Join the Party are really slow
+cargo test --release
