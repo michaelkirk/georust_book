@@ -76,7 +76,7 @@ for row in feature_reader.records() {
 
   let creek_name = creek_segment.get(0).expect("'creek_name' field must be present");
   let infrastructure_label = creek_segment.get(1).expect("'inf1' field must be present");
-  let geometry_str = creek_segment.get(2).expect("`geometry` field must be present");
+  let geometry_str = creek_segment.get(2).expect("'geometry' field must be present");
 
   // We're only interested in Bridged segments.
   if infrastructure_label != "Bridged" {
@@ -139,7 +139,7 @@ Just like the Thomas Mill bridge probably felt in 1938, our code could benefit f
 ```rust,ignore
 let creek_name = creek_segment.get(0).expect("'creek_name' field must be present");
 let infrastructure_label = creek_segment.get(1).expect("'inf1' field must be present");
-let geometry_str = creek_segment.get(2).expect("`geometry` field must be present");
+let geometry_str = creek_segment.get(2).expect("'geometry' field must be present");
 ```
 
 For each row in the CSV, getting fields by number in an ad-hoc fashion like this is simple, but it's a little loosey-goosey: We have to remember what order the fields are in and also write some boring error-checking boilerplate.
@@ -180,7 +180,7 @@ Notice how each field of the `CreekSegment` struct corresponds to a column in ou
 ```rust,ignore
 let creek_name = creek_segment.get(0).expect("'creek_name' field must be present");
 let infrastructure_label = creek_segment.get(1).expect("'inf1' field must be present");
-let geometry_str = creek_segment.get(2).expect("`geometry` field must be present");
+let geometry_str = creek_segment.get(2).expect("'geometry' field must be present");
 
 let geometry = Geometry::try_from_wkt_str(geometry_str).expect("wkt must be valid");
 
